@@ -30,15 +30,8 @@
       </form>
 
       <h2>Shortened URLs</h2>
-      <!-- <ul {{shortened_urls}}></ul> -->
        <ul>
-        
-      <!-- Object.entries(links)
-      .map(
-        ([shortCode, url]) =>
-          `<li><a href="/${shortCode}" target="_blank">${host}</a> - ${url}</li>`,
-      )
-      .join(""); -->
+    
         <% Object.entries(links).map(([shortCode, url]) =>{ %> 
         <% const turncatedUrl = url.length > 20 ? url.substring(0, 20) + "..." : url %>
         <li>
@@ -49,17 +42,7 @@
         </li>
         <%  }) %>
 
-    <!-- // ----------- OR ----------- for replacing in  url list dynamically
-    // const content = file.toString().replaceAll(
-    //   "{{shortened_urls}}",
-    //   Object.entries(links)
-    //     .map(
-    //       ([shortCode, url]) =>
-    //         `<li><a href="/${shortCode}" target="_blank">${req.host}</a> - ${url}</li>`,
-    //     )
-    //     .join(""),
-    // );
-    // return res.send(content); -->
+  
        </ul>
     </div>
   </body>
