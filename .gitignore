@@ -2,7 +2,7 @@
 node_modules/
 
 # Environment variables (SECRETS)
-.env
+
 
 # Logs
 npm-debug.log*
