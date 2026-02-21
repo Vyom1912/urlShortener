@@ -1,0 +1,40 @@
+<%- include('../partials/header', { title: 'Login' }) %>
+
+<div class="hero">
+  <div class="container auth-box">
+
+    <h1>Login</h1>
+
+    <form action="/login" method="POST" autocomplete="off">
+
+      <div class="input-group">
+  <input type="email" name="email" required  placeholder=" "  >
+  <label>Enter Email</label>
+</div>
+
+
+      <div class="input-group">
+        <input type="password" name="password" required  placeholder=" "   />
+        <label>Enter Password</label>
+      </div>
+
+      <div class="remember-wrapper">
+        <label class="remember-label">
+          <input type="checkbox" name="rememberMe" value="true">
+          <span class="custom-checkbox"></span>
+          Remember Me
+        </label>
+      </div>
+
+      <button type="submit">Login</button>
+    </form>
+
+    <p class="auth-footer">
+      Don't have an account?
+      <a href="/register">Register</a>
+    </p>
+
+  </div>
+</div>
+
+<%- include('../partials/footer') %>

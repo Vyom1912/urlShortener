@@ -1,6 +1,7 @@
 import { db } from "../config/db.js";
 
 const collection = db.collection("urls");
+
 export const loadLinks = async () => {
   // return await collection.find().toArray();
   const docs = await collection.find().toArray();

@@ -8,7 +8,6 @@
       .flex {
         width: 95vw;
         height: 95vh;
-        background: #eab2b2;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -16,11 +15,13 @@
       }
       h1,
       a {
-        color: rgb(43, 97, 99);
+        color: rgb(255, 255, 255) !important;
       }
     </style>
   </head>
   <body>
+    <%- include('partials/header', { title: '404' }) %>
+
     <div class="flex">
       <div>
         <h1>404 - Page Not Found</h1>

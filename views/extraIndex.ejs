@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>URL-Shortener</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+  <%- include('partials/header', { title: 'Home' }) %>
+<div class="hero">
+    <div class="container">
+      <h1>URL Shortener</h1>
+
+      <form action="/" method="post">
+        <div class="input-group">
+          <input type="url" name="url" id="url" required placeholder=" " />
+          <label for="url">Enter URL</label>
+        </div>
+
+        <div class="input-group">
+          <input
+            type="text"
+            name="shortCode"
+            id="shortCode"
+            required
+            placeholder=" " />
+          <label for="shortCode">Enter Short Code</label>
+        </div>
+
+        <button type="submit">Shorten URL</button>
+      </form>
+
+      <h2>Shortened URLs</h2>
+      <!-- <ul {{shortened_urls}}></ul> -->
+       <ul>
+        
+     
+        <% Object.entries(links).map(([shortCode, url]) =>{ %> 
+        <% const turncatedUrl = url.length > 20 ? url.substring(0, 20) + "..." : url %>
+        <li>
+          <a href="/<%= shortCode %>" target="_blank">
+            <%= host %> / <%= shortCode %>
+          </a> 
+          - <%= turncatedUrl %>
+        </li>
+        <%  }) %>
+
+
+    <!-- // ----------- OR ----------- for replacing in  url list dynamically
+    // const content = file.toString().replaceAll(
+    //   "{{shortened_urls}}",
+    //   Object.entries(links)
+    //     .map(
+    //       ([shortCode, url]) =>
+    //         `<li><a href="/${shortCode}" target="_blank">${req.host}</a> - ${url}</li>`,
+    //     )
+    //     .join(""),
+    // );
+    // return res.send(content); -->
+       </ul>
+    </div>
+</div>
+   <!-- <%- include('partials/footer') %> -->
+  </body>
+</html>

@@ -1,49 +1,67 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>URL-Shortener</title>
-    <link rel="stylesheet" href="style.css" />
-  </head>
-  <body>
-    <div class="container">
-      <h1>URL Shortener</h1>
+<%- include('partials/header', { 
+    title: 'header', 
+    user: user 
+}) %>
+<div class="hero">
+  <div class="container">
+    <h1>URL Shortener</h1>
 
-      <form action="/" method="post">
-        <div class="input-group">
-          <input type="url" name="url" id="url" required placeholder=" " />
-          <label for="url">Enter URL</label>
-        </div>
+    <form action="/" method="post">
+      <div class="input-group">
+        <input type="url" name="url" required placeholder=" " />
+        <label>Enter URL</label>
+      </div>
 
-        <div class="input-group">
-          <input
-            type="text"
-            name="shortCode"
-            id="shortCode"
-            required
-            placeholder=" " />
-          <label for="shortCode">Enter Short Code</label>
-        </div>
+      <div class="input-group">
+        <input type="text" name="shortCode" required placeholder=" " />
+        <label>Enter Short Code</label>
+      </div>
 
-        <button type="submit">Shorten URL</button>
-      </form>
+      <button type="submit">Shorten URL</button>
+    </form>
 
-      <h2>Shortened URLs</h2>
-       <ul>
-    
-        <% Object.entries(links).map(([shortCode, url]) =>{ %> 
+    <h2>Shortened URLs</h2>
+
+    <!-- <ul>
+      <% Object.entries(links).map(([shortCode, url]) => { %>
         <% const turncatedUrl = url.length > 20 ? url.substring(0, 20) + "..." : url %>
         <li>
           <a href="/<%= shortCode %>" target="_blank">
             <%= host %> / <%= shortCode %>
-          </a> 
+          </a>
           - <%= turncatedUrl %>
         </li>
-        <%  }) %>
+      <% }) %>
+    </ul> -->
+    <!-- <ul>
+  <% Object.entries(links).forEach(([shortCode, url]) => { %>
+    <% const truncatedUrl = url.length > 20 ? url.substring(0, 20) + "..." : url %>
+    <li>
+      <a href="/<%= shortCode %>" target="_blank">
+        <%= host %> / <%= shortCode %>
+      </a>
+      - <%= truncatedUrl %>
+    </li>
+  <% }) %>
+</ul> -->
 
-  
-       </ul>
-    </div>
-  </body>
-</html>
+  <ul>
+  <% links.forEach(link => { %>
+    <% const truncatedUrl = link.url.length > 20 
+         ? link.url.substring(0, 20) + "..." 
+         : link.url %>
+
+    <li>
+      <a href="/<%= link.shortCode %>" target="_blank">
+        <%= host %> / <%= link.shortCode %>
+      </a>
+      - <%= truncatedUrl %>
+    </li>
+  <% }) %>
+</ul>
+
+
+  </div>
+</div>
+
+<%- include('partials/footer') %>
