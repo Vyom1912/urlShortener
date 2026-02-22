@@ -5,9 +5,23 @@ import {
   getLinkByShortCode,
 } from "../models/shortener.model.js";
 
+// export const getURLShortner = async (req, res) => {
+//   try {
+//     const links = await loadLinks();
+//     return res.render("index", {
+//       links,
+//       host: req.protocol + "://" + req.get("host"),
+//       user: null, // temporary fix
+//     });
+//   } catch (error) {
+//     console.log(error);
+//     return res.status(500).send(" get Internal Server Error");
+//   }
+// };
 export const getURLShortner = async (req, res) => {
   try {
     const links = await loadLinks();
+
     return res.render("index", {
       links,
       host: req.protocol + "://" + req.get("host"),
@@ -30,7 +44,7 @@ export const postURLShortner = async (req, res) => {
         .status(400)
         .send("Short code already exists. Please choose another.");
     }
-    await saveLinks({ url, shortCode });
+    await saveLinks({ url, shortCode: finalShortCode });
     return res.redirect("/");
   } catch (error) {
     console.log(error);
@@ -44,7 +58,7 @@ export const redirectToShortCode = async (req, res) => {
 
     const link = await getLinkByShortCode(shortCode);
     if (!link) {
-      return res.redirect("/404");
+      return res.status(404).render("404", { title: "404" });
     }
 
     return res.redirect(link.url);

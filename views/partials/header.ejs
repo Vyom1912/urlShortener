@@ -13,17 +13,23 @@
   <body>
     <nav class="navbar">
       <div class="nav-wrapper">
-        <p class="navbar-brand">
-          <!-- <% if (user) { %>
-            <li class="nav-link">Welcome, <%= user %> 👋</li>
+        <p class="navbar-brand" > 
+          <% if (user) { %>
+            <li class="nav-link">Welcome, <%= user.name %> 👋</li>
           <% } else { %>
              <li class="nav-link"> you are not logged in</li>
-           <% } %> -->
+           <% } %>
         </p>
-        <ul class="navbar-nav">
+        <ul class="navbar-nav"> 
           <li><a class="nav-link" href="/">Home</a></li>
-          <li><a class="nav-link" href="/login">Login</a></li>
-          <li><a class="nav-link" href="/register">Register</a></li>
+              <!-- <li><a class="nav-link" href="/login">Login</a></li> -->
+
+           <% if (user) { %>
+            <li ><a class="nav-link" href="/logout">Logout 👋</a></li>
+          <% } else { %>
+           <li><a class="nav-link" href="/login">Login</a></li>
+            <li><a class="nav-link" href="/register">Register</a></li>   
+           <% } %>
           <!-- <li><a class="nav-link" href="/404">Contact</a></li> -->
         </ul>
       </div>
