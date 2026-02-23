@@ -3,7 +3,7 @@ import {
   postURLShortner,
   getURLShortner,
   // redirectToShortCode,
-} from "../controllers/postshortner.controller.js";
+} from "../controllers/shortener.controller.js";
 const router = Router();
 
 router.get("/", getURLShortner);

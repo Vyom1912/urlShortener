@@ -1,25 +1,30 @@
-import { db } from "../config/db.js";
+import { connectDB } from "../config/db.js";
 
-// Helper to access collection
-const shortLinksCollection = () => db.collection("short_links");
+// Insert short link linked to specific user
+export const insertShortLink = async ({ url, shortCode, userId }) => {
+  const db = await connectDB();
 
-// Get all short links
-export const getAllShortLinks = async () => {
-  return await shortLinksCollection().find().toArray();
-};
-
-// Get short link by shortCode
-export const getShortlinkByShortCode = async (shortCode) => {
-  return await shortLinksCollection().findOne({ shortCode });
-};
-
-// Insert short link
-export const insertShortLink = async ({ url, shortCode }) => {
-  const result = await shortLinksCollection().insertOne({
+  const result = await db.collection("short_links").insertOne({
     url,
     shortCode,
+    userId, // 🔥 link belongs to this user
+    clicks: 0,
     createdAt: new Date(),
   });
 
   return result.insertedId;
+};
+
+// Get all links for logged-in user only
+export const getAllShortLinksByUser = async (userId) => {
+  const db = await connectDB();
+
+  return await db.collection("short_links").find({ userId }).toArray();
+};
+
+// Find link by shortCode
+export const getShortlinkByShortCode = async (shortCode) => {
+  const db = await connectDB();
+
+  return await db.collection("short_links").findOne({ shortCode });
 };

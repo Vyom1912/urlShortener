@@ -18,7 +18,7 @@ router
   .get(authControllers.getRegisterPage)
   .post(authControllers.postRegister);
 
-router.route("/me").get(authControllers.getMe);
+// router.route("/me").get(authControllers.getMe);
 
 router.route("/logout").get(authControllers.logoutUser);
 export const authRoute = router;

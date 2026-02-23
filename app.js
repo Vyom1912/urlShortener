@@ -5,12 +5,13 @@ import express from "express";
 import session from "express-session";
 import flash from "connect-flash";
 import cookieParser from "cookie-parser";
-import { shortenerRouter } from "./routes/shortener.routes.js";
-import { dbClient } from "./config/db.js";
+import { connectDB } from "./config/db.js";
+import { verifyAuthentication } from "./middlewares/auth.middleware.js";
 import { authRoute } from "./routes/auth.routes.js";
-import { verifyAuthentication } from "./middlewares/verify-auth-middleware.js";
+import { shortenerRouter } from "./routes/shortener.routes.js";
+import { redirectToShortCode } from "./controllers/shortener.controller.js";
 
-await dbClient.connect();
+await connectDB(); // connect to DB once
 console.log("MongoDB connected");
 
 const app = express();
@@ -34,19 +35,18 @@ app.use(
 );
 
 app.use(flash());
-
 app.use(verifyAuthentication);
 
+// Make user available in templates
 app.use((req, res, next) => {
   res.locals.user = req.user || null;
   next();
 });
 
 /* ---------------- ROUTES ---------------- */
-app.use("/", shortenerRouter);
 app.use("/", authRoute);
+app.use("/", shortenerRouter);
 // 🔥 MUST BE LAST ROUTE BEFORE 404
-import { redirectToShortCode } from "./controllers/postshortner.controller.js";
 app.get("/:shortCode", redirectToShortCode);
 
 /* ---------------- 404 ---------------- */

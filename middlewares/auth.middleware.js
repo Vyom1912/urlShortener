@@ -1,5 +1,7 @@
 import { verifyJWTToken } from "../services/auth.services.js";
 
+// Middleware runs before routes
+// It checks if user has valid JWT cookie
 export const verifyAuthentication = (req, res, next) => {
   const token = req.cookies.access_token;
   if (!token) {
@@ -8,7 +10,7 @@ export const verifyAuthentication = (req, res, next) => {
   }
   try {
     const decodedToken = verifyJWTToken(token);
-    req.user = decodedToken;
+    req.user = decodedToken; // make user available in all routes
     // console.log(` req.user: `, req.user);
   } catch (error) {
     req.user = null;

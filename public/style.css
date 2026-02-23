@@ -7,60 +7,72 @@
   box-sizing: border-box;
   font-family: "Poppins", sans-serif;
 }
-
 body {
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea, #764ba2);
-  display: flex;
-  flex-direction: column;
+  /* background: linear-gradient(135deg, #667eea, #764ba2); */
 }
-.loginStatus {
-  color: aliceblue;
-  position: absolute;
-  top: 70px;
-  left: 40px;
-  z-index: 10000;
-  font-size: 13px;
+a,
+li {
+  text-decoration: none;
+  list-style: none;
 }
+h1 {
+  /* text-align: center; */
+  margin-bottom: 25px;
+  color: #333;
+}
+
+h2 {
+  /* text-align: center; */
+  margin: 25px 0 10px;
+  font-size: 18px;
+  color: #555;
+}
+
 /* =========================
    NAVBAR
 ========================= */
 .navbar {
   width: 100%;
   padding: 18px 40px;
-  position: fixed;
-  top: 0;
-  left: 0;
   background: #2c42a3;
+  /* background: linear-gradient(135deg, #667eea, #764ba2); */
   backdrop-filter: blur(12px);
   z-index: 1000;
 }
 
 .nav-wrapper {
-  max-width: 1100px;
+  /* max-width: 1100px; */
+  max-width: 80%;
   margin: auto;
+  /* background-color: #555; */
+  padding: 0;
   display: flex;
-  justify-content: space-between;
+  justify-content: left;
   align-items: center;
 }
 
 .navbar-brand {
+  width: 100%;
   font-size: 20px;
   font-weight: 600;
+  flex: 1;
   color: white;
-  text-decoration: none;
 }
-
+.username {
+  width: 100%;
+  /* background: #27ae60 !important; */
+  flex: 1;
+  text-align: left;
+}
 .navbar-nav {
-  list-style: none;
+  width: fit-content;
   display: flex;
   gap: 25px;
 }
 
 .nav-link {
   color: white;
-  text-decoration: none;
-  list-style: none;
   font-weight: 500;
   transition: 0.3s ease;
 }
@@ -73,23 +85,16 @@ body {
    HERO SECTION
 ========================= */
 .hero {
-  flex: 1;
   width: 100%;
-  padding-top: 130px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
 }
 
 /* =========================
    CONTAINER CARD
 ========================= */
 .container {
-  background: #ffffff;
-  width: 400px;
+  width: 80%;
+  margin: auto;
   padding: 35px;
-  border-radius: 16px;
-  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.2);
   animation: fadeIn 0.8s ease;
 }
 
@@ -103,27 +108,41 @@ body {
     transform: translateY(0);
   }
 }
-
-/* =========================
-   HEADINGS
-========================= */
-h1 {
-  text-align: center;
-  margin-bottom: 25px;
-  color: #333;
+.input-group {
+  width: 100%;
+  padding: 10px 15px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+  box-shadow: 0 6px 6px -6px rgba(0, 0, 0, 0.5);
+  transition: box-shadow 0.3s ease;
 }
 
-h2 {
-  text-align: center;
-  margin: 25px 0 10px;
-  font-size: 18px;
-  color: #555;
+.input-group:focus-within {
+  box-shadow: 0 9px 4px -6px rgba(11, 46, 107, 1);
+}
+.input-group i {
+  width: fit-content;
+  font-size: 14px;
+  color: #333;
+}
+.input-group input {
+  flex: 1;
+  padding: 12px 10px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+  background: transparent;
+  transition: all 0.3s ease;
 }
 
 /* =========================
    FLOATING INPUT GROUP
 ========================= */
-.input-group {
+/* .input-group {
   position: relative;
   margin-bottom: 22px;
 }
@@ -151,7 +170,7 @@ h2 {
 }
 
 /* Focus Animation */
-.input-group input:focus {
+/* .input-group input:focus {
   border-color: #667eea;
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
 }
@@ -164,17 +183,21 @@ h2 {
   background: #fff;
   padding: 0 5px;
   color: #667eea;
-}
+} */
 
 /* =========================
    BUTTON
 ========================= */
 button {
-  width: 100%;
+  /* width: 100%; */
+  width: calc(100% - 10px);
+  margin-left: 6px;
   padding: 12px;
+  margin-top: 15px;
   border: none;
-  border-radius: 8px;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  /* border-radius: 8px; */
+  /* background: linear-gradient(135deg, #667eea, #764ba2); */
+  background: #2c42a3;
   color: #fff;
   font-size: 15px;
   cursor: pointer;
@@ -193,24 +216,63 @@ button:active {
 /* =========================
    URL LIST
 ========================= */
-ul {
-  list-style: none;
+.shortenedUrlsBox {
+  width: 100%;
+  margin-top: 35px;
+}
+.shortenedUrlsBox h2 {
+  margin: 0;
+}
+.shortenedLinks {
   margin-top: 10px;
 }
 
-ul li {
+.shortenedLinkItem {
   padding: 8px 12px;
   border-radius: 6px;
   margin-bottom: 6px;
-  font-size: 13px;
+  font-size: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 1px 6px 9px -5px rgba(0, 0, 0, 0.5);
 }
-
-ul li a {
-  text-decoration: none;
+.linkInfo {
+  width: 100%;
+  flex: 1;
+}
+.shortLink {
   color: #667eea;
   font-weight: 500;
 }
-
+.unShortLink {
+  color: #333;
+}
+.icon {
+  font-size: 16px;
+  padding: 4px 5px;
+  color: #333;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  transition: color 0.3s ease;
+}
+.icon i {
+  transition: 0.3s ease;
+}
+.icon i:hover {
+  cursor: pointer;
+  color: #415edf;
+}
+.icon i:active {
+  transform: scale(1.5);
+}
+.c-red {
+  color: #e74c3c;
+}
+.c-green {
+  color: #27ae60;
+}
 /* @keyframes slideUp {
   from {
     opacity: 0;
@@ -233,7 +295,7 @@ ul li a {
 
 .auth-footer a {
   color: #667eea;
-  text-decoration: none;
+
   font-weight: 500;
 }
 
@@ -241,7 +303,9 @@ ul li a {
    REMEMBER ME CHECKBOX
 ========================= */
 .remember-wrapper {
+  margin-top: 20px;
   margin-bottom: 18px;
+  padding-left: 15px;
 }
 
 .remember-label {
@@ -287,5 +351,6 @@ ul li a {
   text-align: center;
   padding: 15px;
   color: white;
+  background: #2c42a3;
   font-size: 14px;
 }

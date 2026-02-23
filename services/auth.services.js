@@ -1,46 +1,52 @@
-import { ObjectId } from "mongodb";
-import { db } from "../config/db.js";
+import { connectDB } from "../config/db.js";
 import argon2 from "argon2";
 import jwt from "jsonwebtoken";
+import { env } from "../config/env.js";
 
-// Get users collection helper
-const usersCollection = () => db.collection("users");
+// Get users collection
+const usersCollection = async () => {
+  const db = await connectDB();
+  return db.collection("users");
+};
 
 // Get user by email
 export const getUserByEmail = async (email) => {
-  return await usersCollection().findOne({ email });
+  const collection = await usersCollection();
+  return await collection.findOne({ email });
 };
 
-// Create a user
+// Create new user
 export const createUser = async ({ name, email, password }) => {
-  const result = await usersCollection().insertOne({
+  const collection = await usersCollection();
+
+  const result = await collection.insertOne({
     name,
     email,
     password,
     createdAt: new Date(),
   });
 
-  return result.insertedId; // Similar to $returningId()
+  return result.insertedId;
 };
 
-// Hash password using argon2
+// Hash password securely using Argon2
 export const hashPassword = async (password) => {
   return await argon2.hash(password);
 };
 
-// Compare password using argon2
-export const comparePassword = async (hashedPassword, plainPassword) => {
-  return await argon2.verify(hashedPassword, plainPassword);
+// Compare entered password with stored hash
+export const comparePassword = async (hashed, plain) => {
+  return await argon2.verify(hashed, plain);
 };
 
 // Generate JWT token
-export const generateToken = ({ id, name, email }) => {
-  return jwt.sign({ id, name, email }, process.env.JWT_SECRET, {
+export const generateToken = (payload) => {
+  return jwt.sign(payload, env.JWT_SECRET, {
     expiresIn: "30d",
   });
 };
 
 // Verify JWT token
 export const verifyJWTToken = (token) => {
-  return jwt.verify(token, process.env.JWT_SECRET);
+  return jwt.verify(token, env.JWT_SECRET);
 };

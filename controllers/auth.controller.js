@@ -5,15 +5,18 @@ import {
   comparePassword,
   generateToken,
 } from "../services/auth.services.js";
-
+import {
+  loginUserSchema,
+  registerUserSchema,
+} from "../validators/auth.validator.js";
 // ---------------------------------------------------------
-// getRegisterPage
+// getRegisterPage // Show register page
 // ---------------------------------------------------------
 export const getRegisterPage = (req, res) => {
   return res.render("auth/register", { errors: req.flash("error") }); // ✅ correct
 };
 // ---------------------------------------------------------
-// getLoginPage
+// getLoginPage // Show login page
 // ---------------------------------------------------------
 export const getLoginPage = (req, res) => {
   if (req.user) {
@@ -22,14 +25,60 @@ export const getLoginPage = (req, res) => {
   return res.render("auth/login", { errors: req.flash("error") }); // ✅ correct
 };
 // ---------------------------------------------------------
+// postRegister // Handle registration
+// ---------------------------------------------------------
+export const postRegister = async (req, res) => {
+  if (req.user) {
+    return res.redirect("/");
+  }
+
+  // 🔥 Validate request body
+  const result = registerUserSchema.safeParse(req.body);
+
+  if (!result.success) {
+    const firstError = result.error.issues[0].message;
+    req.flash("error", firstError);
+    return res.redirect("/register");
+  }
+
+  const { name, email, password } = result.data;
+
+  // 🔥 Check if user already exists
+  const userExist = await getUserByEmail(email);
+  if (userExist) {
+    req.flash("error", "User already exists with this email");
+    return res.redirect("/register");
+  }
+
+  // 🔐 Hash password before saving
+  const hashedPassword = await hashPassword(password);
+
+  await createUser({
+    name,
+    email,
+    password: hashedPassword,
+  });
+
+  return res.redirect("/login");
+};
+// ---------------------------------------------------------
 // postLogin
-// -----------------------------------------------------
+// ---------------------------------------------------------
 export const postLogin = async (req, res) => {
   if (req.user) {
     return res.redirect("/");
   }
 
-  const { email, password } = req.body;
+  // 🔥 Validate request body
+  const result = loginUserSchema.safeParse(req.body);
+
+  if (!result.success) {
+    const firstError = result.error.issues[0].message;
+    req.flash("error", firstError);
+    return res.redirect("/login");
+  }
+
+  const { email, password } = result.data;
 
   const user = await getUserByEmail(email);
 
@@ -38,6 +87,7 @@ export const postLogin = async (req, res) => {
     return res.redirect("/login");
   }
 
+  // 🔐 Compare hashed password
   const isPasswordValid = await comparePassword(user.password, password);
 
   if (!isPasswordValid) {
@@ -45,55 +95,26 @@ export const postLogin = async (req, res) => {
     return res.redirect("/login");
   }
 
+  // 🔥 Generate JWT token
   const token = generateToken({
     id: user._id.toString(),
     name: user.name,
     email: user.email,
   });
 
+  // 🔐 Secure cookie settings (important)
   res.cookie("access_token", token, {
-    httpOnly: true,
+    httpOnly: true, // JS cannot access cookie
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",
   });
 
   return res.redirect("/");
 };
+
 // ---------------------------------------------------------
-// postRegister
+// logoutUser
 // ---------------------------------------------------------
-export const postRegister = async (req, res) => {
-  if (req.user) {
-    return res.redirect("/");
-  }
-
-  const { name, email, password } = req.body;
-
-  const userExist = await getUserByEmail(email);
-  if (userExist) {
-    req.flash("error", "User already exists");
-    return res.redirect("/register");
-  }
-
-  const hashedPassword = await hashPassword(password);
-
-  const userId = await createUser({
-    name,
-    email,
-    password: hashedPassword,
-  });
-
-  console.log("Created user:", userId);
-
-  return res.redirect("/login");
-};
-// ---------------------------------------------------------
-export const getMe = async (req, res) => {
-  // console.log(req.user);
-  if (!req.user) {
-    return res.send("not authenticated");
-  }
-  return res.send(`Welcome ${req.user.name}-${req.user.email}`);
-};
-
 export const logoutUser = (req, res) => {
   res.clearCookie("access_token");
   res.clearCookie("user");

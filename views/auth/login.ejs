@@ -5,17 +5,17 @@
 
     <h1>Login</h1>
 
-    <form action="/login" method="POST" autocomplete="off">
+    <form action="/login" method="POST" >
 
       <div class="input-group">
-  <input type="email" name="email" required  placeholder=" "  >
-  <label>Enter Email</label>
+        <label><i class="fa-solid fa-envelope"></i></label>
+  <input type="email" name="email" required  placeholder="Enter Email"  >
 </div>
 
 
       <div class="input-group">
-        <input type="password" name="password" required  placeholder=" "   />
-        <label>Enter Password</label>
+        <label><i class="fa-solid fa-lock"></i></label>
+        <input type="password" name="password" required  placeholder="Enter Password"   />
       </div>
 
       <div class="remember-wrapper">
@@ -25,7 +25,15 @@
           Remember Me
         </label>
       </div>
-
+      <% if (errors && errors.length > 0) { %>
+        <div class="error-message">
+          <ul>
+            <% errors.forEach((error) => { %>
+              <p class="flash-error"><%= error %></p>
+            <% }); %>
+          </ul>
+        </div>
+        <% } %>
       <button type="submit">Login</button>
     </form>
 

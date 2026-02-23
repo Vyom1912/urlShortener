@@ -9,25 +9,29 @@
     <link
       href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
       rel="stylesheet" />
+      <!-- Font Awesome CDN -->
+<link
+  rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+/>
   </head>
   <body>
     <nav class="navbar">
       <div class="nav-wrapper">
-        <p class="navbar-brand" > 
+        <!-- <p class="navbar-brand" >  -->
           <% if (user) { %>
-            <li class="nav-link">Welcome, <%= user.name %> 👋</li>
+            <li class="nav-link username"><%= user.name %> 👋</li>
           <% } else { %>
-             <li class="nav-link"> you are not logged in</li>
+             <li class="nav-link username"> </li>
            <% } %>
-        </p>
+        <!-- </p> -->
         <ul class="navbar-nav"> 
-          <li><a class="nav-link" href="/">Home</a></li>
               <!-- <li><a class="nav-link" href="/login">Login</a></li> -->
-
            <% if (user) { %>
-            <li ><a class="nav-link" href="/logout">Logout 👋</a></li>
+            <li><a class="nav-link" href="/">Home</a></li>
+            <li ><a class="nav-link" href="/logout">Logout</a></li>
           <% } else { %>
-           <li><a class="nav-link" href="/login">Login</a></li>
+            <li><a class="nav-link" href="/login">Login</a></li>
             <li><a class="nav-link" href="/register">Register</a></li>   
            <% } %>
           <!-- <li><a class="nav-link" href="/404">Contact</a></li> -->
