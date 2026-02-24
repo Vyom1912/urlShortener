@@ -49,17 +49,40 @@ config/
 
 routes/
  └── shortener.routes.js
+ └──auth.routes.js
 
 controllers/
- └── postshortner.controller.js
+ └── shortener.controller.js
+ └── auth.controllers.js
 
-models/
- └── shortener.model.js
+services/
+ └── shortener.services.js
+ └── auth.services.js
+
+middlewares/
+ └── auth.middlewares.js
 
 views/
+ └──auth/
+    └── login.ejs
+    └── register.ejs
+ └──partials/
+    └── header.ejs
+    └── footer.ejs
+ └──404.ejs
  └── index.ejs
+
+validators/
+ └── auth.validator.js
+ └── shortener.validator.js
 
 public/
  └── style.css
 
+app.js
+package-lock.json
+package.json
+.env.example
+README.md
+.gitignore
 ```
