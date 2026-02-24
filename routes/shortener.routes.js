@@ -1,12 +1,17 @@
 import { Router } from "express";
 import {
-  postURLShortner,
-  getURLShortner,
+  postUrlShortener,
+  getUrlShortener,
+  deleteShortLink,
+  updateShortLinkHandler,
   // redirectToShortCode,
 } from "../controllers/shortener.controller.js";
 const router = Router();
+router.route("/").get(getUrlShortener).post(postUrlShortener);
 
-router.get("/", getURLShortner);
-router.post("/", postURLShortner);
+router.route("/delete/:id").post(deleteShortLink);
+router.post("/edit/:id", updateShortLinkHandler);
+// router.get("/", getUrlShortener);
+// router.post("/", postUrlShortener);
 // router.get("/:shortCode", redirectToShortCode);
 export const shortenerRouter = router;

@@ -5,74 +5,104 @@
   <div class="container">
     <h1>URL Shortener</h1>
 
-    <form action="/" method="post">
-      
+    <!-- <form action="/" method="post"> -->
+
+      <form action="<%= editLink ? '/edit/' + editLink.id : '/' %>" method="post">
       <div class="input-group">
         <label><i class="fa-solid fa-link"></i></label>
-        <input type="url" name="url" required placeholder="Enter URL to shorten" />
+        <input type="url" name="url" required placeholder="Enter URL to shorten" value="<%= editLink ? editLink.url : '' %>" />
       </div>
 
       <div class="input-group">
         <label><i class="fa-solid fa-code"></i></label>
-        <input type="text" name="shortCode" required placeholder="Enter custom short code " />
+        <input type="text" name="shortCode" required placeholder="Enter custom short code " value="<%= editLink ? editLink.shortCode : '' %>" />
       </div>
 
-      <button type="submit">Shorten URL</button>
+       <% if (errors && errors.length > 0) { %>
+        <div class="error-message">
+          <ul>
+            <% errors.forEach((error) => { %>
+              <p class="flash-error"><%= error %></p>
+            <% }); %>
+          </ul>
+        </div>
+        <% } %>
+      <button type="submit">
+        <%= editLink ? 'Update URL' : 'Shorten URL' %>
+      </button>
     </form>
     <div class="shortenedUrlsBox">
       <h2>Shortened URLs</h2>
       <ul class="shortenedLinks">
-        <% if (links && links.length > 0) { %>
 
-          <% links.forEach(link => { %>
-            <% const truncatedUrl = link.url.length > 40 
-                ? link.url.substring(0, 40) + "..." 
-                : link.url %>
+  <% if (links && links.length > 0) { %>
 
-            <li class="shortenedLinkItem">
-              <div class="linkInfo"> 
-                <a class="shortLink" href="/<%= link.shortCode %>" target="_blank">
-                  <%= host %> / <%= link.shortCode %>
-                </a>
-                <p class="unShortLink">
-                  <%= truncatedUrl %>
-                </p>
-              </div>
-              <div class="icon">
-                <i class="fa-regular fa-copy"></i>
-                <i class="fa-regular fa-pen-to-square c-green"></i>
-                <i class="fa-regular fa-trash-can c-red"></i>
-              </div>
-            </li>
-          <% }) %>
+    <% links.forEach(link => { %>
 
-        <% } else { %>
-          <p class="shortenedLinkItem">No short links available</p>
-        <% } %>
-      </ul>
-      <!-- <ul class="shortenedLinks">
-        <% links.forEach(link => { %>
-          <% const truncatedUrl = link.url.length > 40 
-              ? link.url.substring(0, 40) + "..." 
-              : link.url %>
+      <% if (!editLink || link.id !== editLink.id) { %>
+
+        <% const truncatedUrl = link.url.length > 60 
+            ? link.url.substring(0, 60) + "..." 
+            : link.url %>
+
         <li class="shortenedLinkItem">
           <div class="linkInfo"> 
             <a class="shortLink" href="/<%= link.shortCode %>" target="_blank">
               <%= host %> / <%= link.shortCode %>
             </a>
             <p class="unShortLink">
-            <%= truncatedUrl %>
+              <%= truncatedUrl %>
             </p>
           </div>
           <div class="icon">
-           <i class="fa-regular fa-copy"></i>
-           <i class="fa-regular fa-pen-to-square c-green"></i>
-           <i class="fa-regular fa-trash-can c-red"></i>
+
+            <button type="button" class="icon-btn copyBtn" 
+                    data-url="<%= host %>/<%= link.shortCode %>">
+              <i class="fa-regular fa-copy"></i>
+            </button>
+
+            <a href="/?edit=<%= link.id %>" class="icon-btn">
+              <i class="fa-regular fa-pen-to-square c-green"></i>
+            </a>
+
+            <form action="/delete/<%= link.id %>" method="post">
+              <button type="submit" class="icon-btn">
+                <i class="fa-regular fa-trash-can c-red"></i>
+              </button>
+            </form>
+
           </div>
+          <!-- <div class="icon">
+            <button class="copyBtn btn" data-url="<%= host %>/<%= link.shortCode %>">
+              <i class="fa-regular fa-copy"></i>
+            </button>
+
+            <button class="editBtn btn">
+              <a href="/?edit=<%= link.id %>">
+                <i class="fa-regular fa-pen-to-square c-green"></i>
+              </a>
+            </button>
+
+            <form action="/delete/<%= link.id %>" method="post" >
+              <button type="submit" class="deleteBtn btn"  data-url="<%= host %>/<%= link.shortCode %>">
+                <i class="fa-regular fa-trash-can c-red"></i>
+              </button>
+            </form>
+          </div> -->
         </li>
-        <% }) %>
-      </ul> -->
-    </div>
+
+      <% } %>
+
+    <% }) %>
+
+  <% } else { %>
+
+    <p class="shortenedLinkItem">No short links available</p>
+
+  <% } %>
+
+</ul>
+  </div>
   </div>
 </div>
 

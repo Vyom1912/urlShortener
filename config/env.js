@@ -12,5 +12,6 @@ export const env = z
     MONGODB_URI: z.string().min(1),
     MONGODB_DATABASE_NAME: z.string().min(1),
     JWT_SECRET: z.string().min(10), // 🔥 required for JWT security
+    SESSION_SECRET: z.string().min(10), // 🔥 required for session security
   })
   .parse(process.env);

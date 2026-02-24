@@ -1,6 +1,6 @@
-import dotenv from "dotenv";
-dotenv.config();
-
+// import dotenv from "dotenv";
+// dotenv.config();
+import { env } from "./config/env.js";
 import express from "express";
 import session from "express-session";
 import flash from "connect-flash";
@@ -28,7 +28,7 @@ app.use(cookieParser());
 
 app.use(
   session({
-    secret: "v-secret",
+    secret: env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
   }),
@@ -55,7 +55,9 @@ app.use((req, res) => {
 });
 
 /* ---------------- SERVER ---------------- */
-const PORT = process.env.PORT || 3000;
+// const PORT = process.env.PORT || 3000;
+const PORT = env.PORT || 3000;
+
 app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
 });

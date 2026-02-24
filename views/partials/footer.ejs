@@ -1,6 +1,35 @@
 <footer class="footer">
   <p>© <%= new Date().getFullYear() %> MyWebsite. All rights reserved.</p>
 </footer>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+
+      const copyButtons = document.querySelectorAll(".copyBtn");
+
+      copyButtons.forEach(button => {
+        button.addEventListener("click", async function () {
+
+          const url = this.getAttribute("data-url");
+
+          try {
+            await navigator.clipboard.writeText(url);
+
+            this.innerHTML = '<i class="fa-solid fa-check" style="color:green;"></i>';
+
+            setTimeout(() => {
+              this.innerHTML = '<i class="fa-regular fa-copy"></i>';
+            }, 1500);
+
+          } catch (err) {
+            alert("Failed to copy!");
+          }
+
+        });
+      });
+
+    });
+  </script>
 
 </body>
 </html>
+

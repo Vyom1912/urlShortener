@@ -9,6 +9,7 @@
 }
 body {
   min-height: 100vh;
+  background: #f5f7fb;
   /* background: linear-gradient(135deg, #667eea, #764ba2); */
 }
 a,
@@ -43,10 +44,11 @@ h2 {
 
 .nav-wrapper {
   /* max-width: 1100px; */
-  max-width: 80%;
+  /* max-width: 80%; */
+  max-width: 900px;
   margin: auto;
   /* background-color: #555; */
-  padding: 0;
+  padding: 0 35px;
   display: flex;
   justify-content: left;
   align-items: center;
@@ -86,16 +88,18 @@ h2 {
 ========================= */
 .hero {
   width: 100%;
+  padding-top: 40px;
 }
 
 /* =========================
    CONTAINER CARD
 ========================= */
 .container {
-  width: 80%;
+  width: 100%;
+  max-width: 900px;
   margin: auto;
   padding: 35px;
-  animation: fadeIn 0.8s ease;
+  /* animation: fadeIn 0.8s ease; */
 }
 
 @keyframes fadeIn {
@@ -135,10 +139,16 @@ h2 {
   border-radius: 8px;
   font-size: 14px;
   outline: none;
+  width: 100%; /* important */
+  min-width: 0; /* VERY important in flexbox */
+  overflow: hidden;
   background: transparent;
   transition: all 0.3s ease;
 }
 
+.input-group input::placeholder {
+  font-size: 13px;
+}
 /* =========================
    FLOATING INPUT GROUP
 ========================= */
@@ -189,13 +199,13 @@ h2 {
    BUTTON
 ========================= */
 button {
-  /* width: 100%; */
-  width: calc(100% - 10px);
-  margin-left: 6px;
-  padding: 12px;
+  width: 100%;
+  /* width: calc(100% - 10px); */
+  padding: 14px;
   margin-top: 15px;
+  /* margin-left: 6px; */
   border: none;
-  /* border-radius: 8px; */
+  border-radius: 8px;
   /* background: linear-gradient(135deg, #667eea, #764ba2); */
   background: #2c42a3;
   color: #fff;
@@ -228,14 +238,17 @@ button:active {
 }
 
 .shortenedLinkItem {
-  padding: 8px 12px;
-  border-radius: 6px;
-  margin-bottom: 6px;
-  font-size: 12px;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  font-size: 13px;
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  box-shadow: 1px 6px 9px -5px rgba(0, 0, 0, 0.5);
+  align-items: flex-start;
+  flex-wrap: wrap; /* important */
+  gap: 10px;
+  background: white;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
 }
 .linkInfo {
   width: 100%;
@@ -250,39 +263,50 @@ button:active {
 }
 .icon {
   font-size: 16px;
-  padding: 4px 5px;
-  color: #333;
   display: flex;
-  align-items: center;
-  gap: 15px;
+  align-items: center !important;
+  /* justify-content: center; */
+  gap: 10px;
   transition: color 0.3s ease;
 }
-.icon i {
-  transition: 0.3s ease;
+
+.icon button {
+  margin: 0;
 }
-.icon i:hover {
+.icon-btn {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 0.3px solid gray;
+  background: #f1f3f8;
+  border-radius: 8px;
   cursor: pointer;
-  color: #415edf;
+  transition: all 0.2s ease;
 }
+
+.icon-btn i {
+  color: #333;
+  font-size: 15px;
+}
+.icon-btn:hover {
+  background: #e2e6f5;
+  transform: translateY(-2px);
+}
+.icon form {
+  margin: 0;
+}
+
 .icon i:active {
   transform: scale(1.5);
 }
 .c-red {
-  color: #e74c3c;
+  color: #e74c3c !important ;
 }
 .c-green {
-  color: #27ae60;
+  color: #27ae60 !important;
 }
-/* @keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-} */
 
 /* =========================
    AUTH FOOTER TEXT
@@ -353,4 +377,64 @@ button:active {
   color: white;
   background: #2c42a3;
   font-size: 14px;
+}
+
+/* responsive */
+@media (max-width: 945px) {
+  .nav-wrapper {
+    padding: 0;
+  }
+}
+@media (max-width: 768px) {
+  .nav-wrapper {
+    padding: 0 20px;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .navbar-nav {
+    gap: 15px;
+  }
+}
+
+@media (max-width: 768px) {
+  .nav-wrapper {
+    /* flex-direction: column; */
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .navbar-nav {
+    gap: 15px;
+  }
+
+  .navbar {
+    padding: 15px 20px;
+  }
+}
+
+@media (max-width: 600px) {
+  .container {
+    padding: 20px;
+  }
+  .nav-wrapper {
+    padding: 0;
+  }
+
+  .shortenedLinkItem {
+    flex-direction: column;
+  }
+
+  .icon {
+    /* justify-content: flex-end; */
+    width: 100%;
+  }
+
+  .shortLink {
+    font-size: 13px;
+    word-break: break-all;
+  }
+
+  .unShortLink {
+    font-size: 12px;
+  }
 }
