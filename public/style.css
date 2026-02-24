@@ -248,6 +248,7 @@ button:active {
   flex-wrap: wrap; /* important */
   gap: 10px;
   background: white;
+  overflow: hidden;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
 }
 .linkInfo {
@@ -409,6 +410,9 @@ button:active {
 
   .navbar {
     padding: 15px 20px;
+  }
+  .input-group {
+    gap: 5px;
   }
 }
 
