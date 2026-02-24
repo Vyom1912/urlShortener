@@ -28,10 +28,19 @@ export const getAllShortLinksByUser = async (userId) => {
   }));
 };
 // Find link by shortCode
+// export const getShortlinkByShortCode = async (shortCode, userId) => {
+//   const db = await connectDB();
+
+//   return await db.collection("short_links").findOne({ shortCode, userId });
+// };
 export const getShortlinkByShortCode = async (shortCode, userId) => {
   const db = await connectDB();
 
-  return await db.collection("short_links").findOne({ shortCode, userId });
+  const query = userId
+    ? { shortCode, userId } // when checking per user
+    : { shortCode }; // when redirecting publicly
+
+  return await db.collection("short_links").findOne(query);
 };
 
 //

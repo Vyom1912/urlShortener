@@ -47,7 +47,7 @@ app.use((req, res, next) => {
 app.use("/", authRoute);
 app.use("/", shortenerRouter);
 // 🔥 MUST BE LAST ROUTE BEFORE 404
-app.get("/:shortCode", redirectToShortCode);
+// app.get("/:shortCode", redirectToShortCode);
 
 /* ---------------- 404 ---------------- */
 app.use((req, res) => {
