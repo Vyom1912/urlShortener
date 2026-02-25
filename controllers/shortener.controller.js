@@ -62,7 +62,7 @@ export const postUrlShortener = async (req, res) => {
     const finalShortCode = shortCode || crypto.randomBytes(4).toString("hex");
 
     // const links = await loadLinks();
-    const existing = await getShortlinkByShortCode(finalShortCode, req.user.id);
+    const existing = await getShortlinkByShortCode(finalShortCode);
 
     if (existing) {
       req.flash("errors", "Shortcode already exists");
@@ -160,14 +160,21 @@ export const updateShortLinkHandler = async (req, res) => {
   const { url, shortCode } = result.data;
 
   try {
-    // 🔥 Check if shortcode already exists for this user (but NOT this current link)
+    const current = await findShortLinkById(id);
 
-    const existing = await getShortlinkByShortCode(shortCode, req.user.id);
-
-    if (existing && existing._id.toString() !== id) {
-      req.flash("errors", "Shortcode already exists");
-      return res.redirect(`/?edit=${id}`);
+    if (!current) {
+      return res.redirect("/404");
     }
+
+    if (current.shortCode !== shortCode) {
+      const duplicate = await getShortlinkByShortCode(shortCode);
+
+      if (duplicate) {
+        req.flash("errors", ["Shortcode already exists"]);
+        return res.redirect(`/?edit=${id}`);
+      }
+    }
+
     await updateShortLink({ id, url, shortCode, userId: req.user.id });
 
     return res.redirect("/");

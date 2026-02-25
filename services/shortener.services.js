@@ -33,14 +33,15 @@ export const getAllShortLinksByUser = async (userId) => {
 
 //   return await db.collection("short_links").findOne({ shortCode, userId });
 // };
-export const getShortlinkByShortCode = async (shortCode, userId) => {
+export const getShortlinkByShortCode = async (shortCode) => {
   const db = await connectDB();
 
-  const query = userId
-    ? { shortCode, userId } // when checking per user
-    : { shortCode }; // when redirecting publicly
+  // const query = userId
+  //   ? { shortCode, userId } // when checking per user
+  //   : { shortCode }; // when redirecting publicly
 
-  return await db.collection("short_links").findOne(query);
+  // return await db.collection("short_links").findOne(query);
+  return await db.collection("short_links").findOne({ shortCode });
 };
 
 //
