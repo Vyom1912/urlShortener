@@ -65,7 +65,7 @@ export const postUrlShortener = async (req, res) => {
     const existing = await getShortlinkByShortCode(finalShortCode);
 
     if (existing) {
-      req.flash("errors", "Shortcode already exists");
+      req.flash("errors", "Shortcode already is existed by other user or you");
       return res.redirect("/");
     }
     // await saveLinks({ url, shortCode: finalShortCode });
@@ -170,7 +170,9 @@ export const updateShortLinkHandler = async (req, res) => {
       const duplicate = await getShortlinkByShortCode(shortCode);
 
       if (duplicate) {
-        req.flash("errors", ["Shortcode already exists"]);
+        req.flash("errors", [
+          "Shortcode already is existed by other user or you",
+        ]);
         return res.redirect(`/?edit=${id}`);
       }
     }
