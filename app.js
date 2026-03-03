@@ -4,6 +4,7 @@ import { env } from "./config/env.js";
 import express from "express";
 import session from "express-session";
 import flash from "connect-flash";
+import requestIp from "request-ip";
 import cookieParser from "cookie-parser";
 import { connectDB } from "./config/db.js";
 import { verifyAuthentication } from "./middlewares/auth.middleware.js";
@@ -35,6 +36,8 @@ app.use(
 );
 
 app.use(flash());
+app.use(requestIp.mw());
+
 app.use(verifyAuthentication);
 
 // Make user available in templates

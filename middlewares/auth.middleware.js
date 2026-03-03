@@ -1,22 +1,77 @@
-import { verifyJWTToken } from "../services/auth.services.js";
+import {
+  ACCESS_TOKEN_EXPIRY,
+  REFRESH_TOKEN_EXPIRY,
+} from "../config/constants.js";
+import { verifyJWTToken, refreshTokens } from "../services/auth.services.js";
 
-// Middleware runs before routes
-// It checks if user has valid JWT cookie
-export const verifyAuthentication = (req, res, next) => {
-  const token = req.cookies.access_token;
-  if (!token) {
-    req.user = null;
+export const verifyAuthentication = async (req, res, next) => {
+  const accessToken = req.cookies.access_token;
+  const refreshToken = req.cookies.refresh_token;
+
+  req.user = null;
+  // If no tokens → continue
+  if (!accessToken && !refreshToken) {
     return next();
   }
-  try {
-    const decodedToken = verifyJWTToken(token);
-    req.user = decodedToken; // make user available in all routes
-    // console.log(` req.user: `, req.user);
-  } catch (error) {
-    req.user = null;
+  // ✅ If access token exists → verify it
+  if (accessToken) {
+    try {
+      const decodedToken = verifyJWTToken(accessToken);
+      req.user = decodedToken;
+      return next();
+    } catch (error) {
+      // Access token invalid → clear it
+      res.clearCookie("access_token");
+    }
+  }
+  // ✅ If refresh token exists → try to refresh
+  if (refreshToken) {
+    try {
+      const { newAccessToken, newRefreshToken, user } =
+        await refreshTokens(refreshToken);
+
+      req.user = user;
+
+      const baseConfig = {
+        httpOnly: true,
+        // secure: true, // Set to true in production (requires HTTPS)
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+      };
+      res.cookie("access_token", newAccessToken, {
+        ...baseConfig,
+        maxAge: ACCESS_TOKEN_EXPIRY, // 15 minutes
+      });
+      res.cookie("refresh_token", newRefreshToken, {
+        ...baseConfig,
+        maxAge: REFRESH_TOKEN_EXPIRY, // 7 days
+      });
+      return next();
+    } catch (error) {
+      console.log(error);
+      // 🔥 IMPORTANT: clear invalid cookies
+      res.clearCookie("access_token");
+      res.clearCookie("refresh_token");
+    }
   }
   return next();
 };
+// --------------------------------------------------------------------
+// export const verifyAuthentication = (req, res, next) => {
+//   const token = req.cookies.access_token;
+//   if (!token) {
+//     req.user = null;
+//     return next();
+//   }
+//   try {
+//     const decodedToken = verifyJWTToken(token);
+//     req.user = decodedToken;
+//     // console.log(` req.user: `, req.user);
+//   } catch (error) {
+//     req.user = null;
+//   }
+//   return next();
+// };
 // you can add any property to req
 // but
 // Avoid overwriting existing properties like req.user, req.body, req.params, etc. to prevent conflicts with Express's built-in properties and middleware. Instead, use a custom property name like req.authUser or req.currentUser to store authenticated user information without risking unintended side effects.

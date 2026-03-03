@@ -3,7 +3,9 @@ import {
   createUser,
   hashPassword,
   comparePassword,
-  generateToken,
+  // generateToken,
+  authenticateUser,
+  clearUserSession,
 } from "../services/auth.services.js";
 import {
   loginUserSchema,
@@ -53,13 +55,19 @@ export const postRegister = async (req, res) => {
   // 🔐 Hash password before saving
   const hashedPassword = await hashPassword(password);
 
-  await createUser({
+  const userId = await createUser({
     name,
     email,
     password: hashedPassword,
   });
-
-  return res.redirect("/login");
+  const createdUserData = {
+    _id: userId,
+    name,
+    email,
+  };
+  await authenticateUser({ req, res, user: createdUserData });
+  return res.redirect("/");
+  // return res.redirect("/login");
 };
 // ---------------------------------------------------------
 // postLogin
@@ -94,20 +102,23 @@ export const postLogin = async (req, res) => {
     req.flash("error", "Invalid email or password");
     return res.redirect("/login");
   }
+  // ----------------------------------------------------------
 
   // 🔥 Generate JWT token
-  const token = generateToken({
-    id: user._id.toString(),
-    name: user.name,
-    email: user.email,
-  });
+  // const token = generateToken({
+  //   id: user._id.toString(),
+  //   name: user.name,
+  //   email: user.email,
+  // });
 
-  // 🔐 Secure cookie settings (important)
-  res.cookie("access_token", token, {
-    httpOnly: true, // JS cannot access cookie
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
-  });
+  // // 🔐 Secure cookie settings (important)
+  // res.cookie("access_token", token, {
+  //   httpOnly: true, // JS cannot access cookie
+  //   secure: process.env.NODE_ENV === "production",
+  //   sameSite: "strict",
+  // });
+  // ----------------------------------------------------------
+  await authenticateUser({ req, res, user, email });
 
   return res.redirect("/");
 };
@@ -115,8 +126,13 @@ export const postLogin = async (req, res) => {
 // ---------------------------------------------------------
 // logoutUser
 // ---------------------------------------------------------
-export const logoutUser = (req, res) => {
+export const logoutUser = async (req, res) => {
+  if (req.user?.sessionId) {
+    await clearUserSession(req.user.sessionId);
+  }
+  // await clearUserSession(req.user.sessionId);
   res.clearCookie("access_token");
+  res.clearCookie("refresh_token");
   res.clearCookie("user");
   return res.redirect("/login");
 };
