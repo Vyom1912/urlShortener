@@ -26,7 +26,7 @@ app.use(cookieParser());
 
 app.use(
   session({
-    secret: "v-secret",
+    secret: process.env.SESSION_SECRET,
     resave: true,
     saveUninitialized: false,
   }),
