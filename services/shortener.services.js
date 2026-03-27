@@ -1,25 +1,16 @@
-import { db } from "../config/db.js";
+import { ShortLink } from "../models/ShortLink.js";
 
-// Helper to access collection
-const shortLinksCollection = () => db.collection("short_links");
+export const getAllShortLinks = (userId) => ShortLink.find({ userId });
 
-// Get all short links
-export const getAllShortLinks = async () => {
-  return await shortLinksCollection().find().toArray();
-};
+export const getShortlinkByShortCode = (shortCode) =>
+  ShortLink.findOne({ shortCode });
 
-// Get short link by shortCode
-export const getShortlinkByShortCode = async (shortCode) => {
-  return await shortLinksCollection().findOne({ shortCode });
-};
+export const insertShortLink = (data) => ShortLink.create(data);
 
-// Insert short link
-export const insertShortLink = async ({ url, shortCode }) => {
-  const result = await shortLinksCollection().insertOne({
-    url,
-    shortCode,
-    createdAt: new Date(),
-  });
+export const findShortLinkById = (id) => ShortLink.findById(id);
 
-  return result.insertedId;
-};
+export const updateShortLink = ({ id, url, shortCode }) =>
+  ShortLink.findByIdAndUpdate(id, { url, shortCode });
+
+export const deleteShortLinkById = (id, userId) =>
+  ShortLink.deleteOne({ _id: id, userId });

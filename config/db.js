@@ -1,12 +1,48 @@
-// for MongoDB Cloud Server
-import { MongoClient } from "mongodb";
+import mongoose from "mongoose";
 import { env } from "./env.js";
 
-export const dbClient = new MongoClient(env.MONGODB_URI, {
-  tls: true,
-  serverApi: { version: "1", strict: true, deprecationErrors: true },
-});
-export const db = dbClient.db(env.MONGODB_DATABASE_NAME);
+export const connectDB = async () => {
+  try {
+    await mongoose.connect(env.MONGODB_URI, {
+      dbName: env.MONGODB_DATABASE_NAME,
+    });
+    console.log("✅ MongoDB Connected");
+  } catch (error) {
+    console.error("❌ DB Connection Error:", error);
+    process.exit(1);
+  }
+};
+
+// ----------------------------------------------------------------
+
+// import { MongoClient } from "mongodb";
+// import { env } from "./env.js";
+
+// let client;
+// let database;
+
+// // Reuse DB connection (important for serverless like Vercel)
+// export const connectDB = async () => {
+//   if (database) return database; // if already connected, reuse
+
+//   client = new MongoClient(env.MONGODB_URI);
+//   await client.connect();
+
+//   database = client.db(env.MONGODB_DATABASE_NAME);
+//   return database;
+// };
+// ----------------------------------------------------------------
+// for MongoDB Cloud Server
+// import { MongoClient } from "mongodb";
+// import { env } from "./env.js";
+
+// export const dbClient = new MongoClient(env.MONGODB_URI, {
+//   tls: true,
+//   serverApi: { version: "1", strict: true, deprecationErrors: true },
+// });
+// export const db = dbClient.db(env.MONGODB_DATABASE_NAME);
+
+// ----------------------------------------------------------------
 
 // for MongoDB Local Server
 // import { MongoClient } from "mongodb";

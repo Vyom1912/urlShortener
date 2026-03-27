@@ -13,6 +13,7 @@
   "description": "",
   "dependencies": {
     "argon2": "^0.44.0",
+    "bcryptjs": "^3.0.3",
     "connect-flash": "^0.1.1",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
@@ -21,7 +22,11 @@
     "express": "^5.2.1",
     "express-session": "^1.19.0",
     "jsonwebtoken": "^9.0.3",
+    "mjml": "^4.18.0",
     "mongodb": "^7.1.0",
+    "nodemailer": "^8.0.4",
+    "request-ip": "^3.3.0",
+    "resend": "^6.9.4",
     "zod": "^4.3.6"
   },
   "devDependencies": {

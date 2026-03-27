@@ -1,76 +1,87 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
-</head>
-<body>
-  
-<%- include('partials/header', { title: 'URL Shortener'}) %>
+<%- include('partials/header', { title: 'Home' }) %>
+
 <div class="hero">
-  <div class="container">
+  <div class="container ">
     <h1>URL Shortener</h1>
 
-    <form action="/" method="post">
+    <form action="<%= editLink ? '/edit/' + editLink.id : '/' %>" method="post">
       <div class="input-group">
-        <input type="url" name="url" required placeholder=" " />
-        <label>Enter URL</label>
+        <label><i class="fa-solid fa-link"></i></label>
+        <input type="url" name="url" required placeholder="Enter URL to shorten" value="<%= editLink ? editLink.url : '' %>" />
       </div>
 
       <div class="input-group">
-        <input type="text" name="shortCode" required placeholder=" " />
-        <label>Enter Short Code</label>
+        <label><i class="fa-solid fa-code"></i></label>
+        <input type="text" name="shortCode" required placeholder="Enter custom short code " value="<%= editLink ? editLink.shortCode : '' %>" />
       </div>
 
-      <button type="submit">Shorten URL</button>
+      <% if (errors && errors.length > 0) { %>
+         <div class="error-message">
+          <ul>
+        <% errors.forEach(e => { %>
+          <p class="flash-error"><%= e %></p>
+        <% }) %>
+        </ul>
+        </div>
+      <% } %>
+
+      <button type="submit"><%= editLink ? 'Update' : 'Shorten' %></button>
     </form>
+    
+    <div class="shortenedUrlsBox">
+      <h2>Shortened URLs</h2>
+      <ul class="shortenedLinks">
 
-    <h2>Shortened URLs</h2>
+      <% if (links && links.length > 0) { %>
 
-    <!-- <ul>
-      <% Object.entries(links).map(([shortCode, url]) => { %>
-        <% const turncatedUrl = url.length > 20 ? url.substring(0, 20) + "..." : url %>
-        <li>
-          <a href="/<%= shortCode %>" target="_blank">
-            <%= host %> / <%= shortCode %>
-          </a>
-          - <%= turncatedUrl %>
+    <% links.forEach(link => { %>
+
+      <% if (!editLink || link.id !== editLink.id) { %>
+
+        <% const truncatedUrl = link.url.length > 60 
+            ? link.url.substring(0, 60) + "..." 
+            : link.url %>
+
+        <li class="shortenedLinkItem">
+          <div class="linkInfo"> 
+            <a class="shortLink" href="/<%= link.shortCode %>" target="_blank">
+              <%= host %> / <%= link.shortCode %>
+            </a>
+            <p class="unShortLink">
+              <%= truncatedUrl %>
+            </p>
+          </div>
+          <div class="icon">
+
+            <button type="button" class="icon-btn copyBtn" 
+                    data-url="<%= host %>/<%= link.shortCode %>">
+              <i class="fa-regular fa-copy"></i>
+            </button>
+
+            <a href="/?edit=<%= link.id %>" class="icon-btn">
+              <i class="fa-regular fa-pen-to-square c-green"></i>
+            </a>
+
+            <form action="/delete/<%= link.id %>" method="post">
+              <button type="submit" class="icon-btn">
+                <i class="fa-regular fa-trash-can c-red"></i>
+              </button>
+            </form>
+
+          </div>
         </li>
+
+        <% } %>
+
       <% }) %>
-    </ul> -->
-    <!-- <ul>
-  <% Object.entries(links).forEach(([shortCode, url]) => { %>
-    <% const truncatedUrl = url.length > 20 ? url.substring(0, 20) + "..." : url %>
-    <li>
-      <a href="/<%= shortCode %>" target="_blank">
-        <%= host %> / <%= shortCode %>
-      </a>
-      - <%= truncatedUrl %>
-    </li>
-  <% }) %>
-</ul> -->
 
-  <ul>
-  <% links.forEach(link => { %>
-    <% const truncatedUrl = link.url.length > 20 
-         ? link.url.substring(0, 20) + "..." 
-         : link.url %>
+    <% } else { %>
 
-    <li>
-      <a href="/<%= link.shortCode %>" target="_blank">
-        <%= host %> / <%= link.shortCode %>
-      </a>
-      - <%= truncatedUrl %>
-    </li>
-  <% }) %>
-</ul>
+    <p class="shortenedLinkItem">No short links available</p>
 
-
+    <% } %>
+    </ul>
   </div>
 </div>
 
 <%- include('partials/footer') %>
-
-</body>
-</html>
