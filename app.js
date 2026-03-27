@@ -45,7 +45,7 @@ app.use((req, res, next) => {
 app.use("/", shortenerRoutes);
 app.use("/", authRoute);
 
-// app.listen(PORT, () => {
-//   console.log(`Server running at http://localhost:${PORT}`);
-// });
-export default app;
+app.listen(PORT, () => {
+  console.log(`Server running at http://localhost:${PORT}`);
+});
+// export default app;
