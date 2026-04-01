@@ -1,5 +1,5 @@
 {
-  "name": "08_url_shortener",
+  "name": "url_shortener",
   "version": "1.0.0",
   "main": "app.js",
   "type": "module",
