@@ -1,3 +1,6 @@
+import dotenv from "dotenv";
+dotenv.config();
+
 import express from "express";
 import session from "express-session";
 import flash from "connect-flash";
@@ -10,9 +13,9 @@ import { authRoute } from "./routes/auth.routes.js";
 import { verifyAuthentication } from "./middlewares/auth.middleware.js";
 
 export const app = express();
-// const PORT = process.env.PORT || 3000;
-const PORT = 3000;
-
+const PORT = process.env.PORT || 3000;
+// const PORT = 3000;
+console.log("RESEND KEY:", process.env.RESEND_API_KEY);
 // ✅ CONNECT DB
 connectDB();
 
