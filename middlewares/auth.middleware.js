@@ -22,14 +22,18 @@ export const verifyAuthentication = async (req, res, next) => {
 
   if (refreshToken) {
     try {
-      const { newAccessToken, newRefreshToken, user } =
-        await refreshTokens(refreshToken);
+      // const { newAccessToken, newRefreshToken, user } =
+      //   await refreshTokens(refreshToken);
+      const tokens = await refreshTokens(refreshToken);
 
+      if (!tokens) return next();
+
+      const { newAccessToken, newRefreshToken, user } = tokens;
       req.user = user;
 
       const baseConfig = {
         httpOnly: true,
-        secure: true,
+        secure: process.env.NODE_ENV === "production",
       };
 
       res.cookie("access_token", newAccessToken, {

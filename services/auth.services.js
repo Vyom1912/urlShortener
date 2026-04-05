@@ -13,6 +13,7 @@ import {
 import { User } from "../models/User.js";
 import { Session } from "../models/Session.js";
 import { VerifyEmailToken } from "../models/VerifyEmailToken.js";
+import { PasswordResetToken } from "../models/PasswordResetToken.js";
 
 import crypto from "crypto";
 import argon2 from "argon2";
@@ -86,27 +87,45 @@ export const authenticateUser = async ({ req, res, user }) => {
 };
 
 // REFRESH
-export const refreshTokens = (refreshToken) => {
+export const refreshTokens = async (refreshToken) => {
   try {
     const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
 
-    const payload = {
-      id: decoded.id,
-      email: decoded.email,
-    };
+    const session = await Session.findById(decoded.sessionId);
+    if (!session) return null;
 
+    const user = await User.findById(session.userId);
+    if (!user) return null;
+
+    const payload = {
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      isEmailValid: user.isEmailValid,
+      sessionId: session._id,
+    };
     const newAccessToken = jwt.sign(payload, process.env.JWT_SECRET, {
       expiresIn: "15m",
     });
 
-    const newRefreshToken = jwt.sign(payload, process.env.JWT_REFRESH_SECRET, {
-      expiresIn: "7d",
-    });
+    // const newRefreshToken = jwt.sign(payload, process.env.JWT_REFRESH_SECRET, {
+    //   expiresIn: "7d",
+    // });
+    const newRefreshToken = jwt.sign(
+      { sessionId: session._id },
+      process.env.JWT_REFRESH_SECRET,
+      { expiresIn: "7d" },
+    );
 
-    return { accessToken: newAccessToken, refreshToken: newRefreshToken };
+    // return { accessToken: newAccessToken, refreshToken: newRefreshToken };
+    return {
+      newAccessToken,
+      newRefreshToken,
+      user: payload,
+    };
   } catch (error) {
     console.log("❌ Refresh Token Error:", error.message);
-    return null; // IMPORTANT
+    return null;
   }
 };
 
@@ -148,10 +167,7 @@ export const sendNewVerifyEmailLink = async ({ userId, email }) => {
     token: randomToken,
   });
 
-  const verifyEmailLink = await createVerifyEmailLink({
-    email,
-    token: randomToken,
-  });
+  const verifyEmailLink = createVerifyEmailLink(email, randomToken);
 
   const mjmlTemplate = await fs.readFile(
     path.join(import.meta.dirname, "..", "emails", "verify-email.mjml"),
@@ -170,4 +186,59 @@ export const sendNewVerifyEmailLink = async ({ userId, email }) => {
     subject: "Verify your email",
     html: htmlOutput,
   });
+};
+
+// updateUserPassword
+export const updateUserPassword = async ({ userId, newPassword }) => {
+  const newHashedPassword = await hashPassword(newPassword);
+
+  return await User.updateOne(
+    { _id: userId },
+    { $set: { password: newHashedPassword } },
+  );
+};
+
+// findUserByEmail
+export const findUserByEmail = async (email) => {
+  return await User.findOne({ email });
+};
+
+// createResetPasswordLink
+export const createResetPasswordLink = async ({ userId, email }) => {
+  const randomToken = crypto.randomBytes(32).toString("hex");
+  const tokenHash = crypto
+    .createHash("sha256")
+    .update(randomToken)
+    .digest("hex");
+
+  try {
+    await PasswordResetToken.deleteMany({ userId });
+  } catch (err) {
+    console.error("DELETE ERROR:", err);
+    throw err;
+  }
+
+  await PasswordResetToken.create({
+    userId,
+    tokenHash,
+  });
+
+  return `${process.env.FRONTEND_URL}/reset-password/${randomToken}`;
+};
+
+// getResetPasswordToken
+export const getResetPasswordToken = async (token) => {
+  const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
+
+  const data = await PasswordResetToken.findOne({
+    tokenHash,
+    expiresAt: { $gte: new Date() },
+  });
+
+  return data;
+};
+
+// clearResetPasswordToken
+export const clearResetPasswordToken = async (userId) => {
+  return await PasswordResetToken.deleteMany({ userId });
 };

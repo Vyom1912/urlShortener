@@ -1,77 +1,92 @@
 <%- include('../partials/header', { title: 'profile' }) %>
 <div class="hero">
-    <div class="container">
+  <div class="container">
+    <div class="alert-container">
+      <% if(user) { %>
+      <div class="alert alert-success">
+        <i class="fa-solid fa-circle-check"></i>
+        <span>You are logged in</span>
+      </div>
+      <% } else { %>
+      <div class="alert alert-warning">
+        <i class="fa-solid fa-circle-exclamation"></i>
+        <span>You are not logged in</span>
+      </div>
+      <% } %>
+    </div>
     <h1>Your Profile</h1>
     <div class="profile-card">
-        <div class="profile-header">
-          <div class="profile-avatar">
-            <div class="avatar-placeholder">
-              <span><%= user.name.charAt(0).toUpperCase() %></span>
-            </div>
-          </div>
-          <div class="profile-info">
-            <h2 class="profile-name"> <%= user.name %></h2>
-            <p class="user-data">
-              <i class="fa-solid fa-envelope"></i><span><%= user.email %></span>
-            </p>
-            <p class="user-data ">
-             <i class="fa-regular fa-calendar-days"></i><span>member since <%= new Date(user.createdAt).toLocaleDateString() %></span>
-            </p>
+      <div class="profile-header">
+        <div class="profile-avatar">
+          <div class="avatar-placeholder">
+            <span><%= user.name.charAt(0).toUpperCase() %></span>
           </div>
         </div>
-
-        <div class="profile-stats">
-          <div class="stat-item">
-            <span class="stat-value"
-              ><%= user.links ? user.links.length : 0 %></span
+        <div class="profile-info">
+          <h2 class="profile-name"><%= user.name %></h2>
+          <p class="user-data">
+            <i class="fa-solid fa-envelope"></i><span><%= user.email %></span>
+          </p>
+          <p class="user-data">
+            <i class="fa-regular fa-calendar-days"></i
+            ><span
+              >member since
+              <%= new Date(user.createdAt).toLocaleDateString() %></span
             >
-            <span class="stat-label">Links Created</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-value"><%= user.totalClicks || 0 %></span>
-            <span class="stat-label">Total Clicks</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-value"
-              ><%= user.lastActive ? new
-              Date(user.lastActive).toLocaleDateString() : 'Today' %></span
-            >
-            <span class="stat-label">Last Active</span>
-          </div>
-        </div>
-
-        <div class="profile-verification">
-          <p class="verification-status">
-            <span class="verification-label">Email Verification:</span>
-            <% if (user.isEmailValid) { %>
-            <span class="verification-badge verified">
-              <i class="fa-solid fa-circle-check"></i>Verified
-            </span>
-            <% } else { %>
-            <span class="verification-badge not-verified">
-              <i class="fa-solid fa-circle-exclamation"></i> Not Verified
-            </span>
-            <a href="/verify-email" class="verify-link">
-              <i class="fa-solid fa-paper-plane"></i> Verify Now
-            </a>
-            <% } %>
           </p>
         </div>
-
       </div>
-      <div class="profile-actions">
-          <a href="/edit-profile" class="btn">
-              <i class="fa-regular fa-pen-to-square"></i> Edit Profile
-          </a>
-          <a href="/change-password" class="btn">
-              <i class="fa-solid fa-key"></i> Change Password
-          </a>
-          <a href="/logout" class="btn">
-              <i class="fa-solid fa-power-off"></i> Logout
-          </a>
-    </div>
-    </div>
-</div>
 
+      <div class="profile-stats">
+        <div class="stat-item">
+          <span class="stat-value"
+            ><%= user.links ? user.links.length : 0 %></span
+          >
+          <span class="stat-label">Links Created</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-value"><%= user.totalClicks || 0 %></span>
+          <span class="stat-label">Total Clicks</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-value"
+            ><%= user.lastActive ? new
+              Date(user.lastActive).toLocaleDateString() : 'Today' %></span
+          >
+          <span class="stat-label">Last Active</span>
+        </div>
+      </div>
+
+      <div class="profile-verification">
+        <p class="verification-status">
+          <span class="verification-label">Email Verification:</span>
+          <% if (user.isEmailValid) { %>
+          <span class="verification-badge verified">
+            <i class="fa-solid fa-circle-check"></i>Verified
+          </span>
+          <% } else { %>
+          <span class="verification-badge not-verified">
+            <i class="fa-solid fa-circle-exclamation"></i> Not Verified
+          </span>
+          <a href="/verify-email" class="verify-link">
+            <i class="fa-solid fa-paper-plane"></i> Verify Now
+          </a>
+          <% } %>
+        </p>
+      </div>
+    </div>
+    <div class="profile-actions">
+      <a href="/edit-profile" class="btn">
+        <i class="fa-regular fa-pen-to-square"></i> Edit Profile
+      </a>
+      <a href="/change-password" class="btn">
+        <i class="fa-solid fa-key"></i> Change Password
+      </a>
+      <a href="/logout" class="btn">
+        <i class="fa-solid fa-power-off"></i> Logout
+      </a>
+    </div>
+  </div>
+</div>
 
 <%- include('../partials/footer') %>

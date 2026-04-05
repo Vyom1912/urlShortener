@@ -2,46 +2,46 @@
 
 <div class="hero">
   <div class="container auth-box">
-
     <h1>Login</h1>
-
-    <form action="/login" method="POST" >
-
+    <form action="/login" method="POST">
       <div class="input-group">
         <label><i class="fa-solid fa-envelope"></i></label>
-  <input type="email" name="email" required  placeholder="Enter Email"  >
-</div>
-
-
+        <input type="email" name="email" required placeholder="Enter Email" />
+      </div>
       <div class="input-group">
         <label><i class="fa-solid fa-lock"></i></label>
-        <input type="password" name="password" required  placeholder="Enter Password"   />
+        <input
+          type="password"
+          name="password"
+          required
+          placeholder="Enter Password"
+        />
       </div>
-
-      <!-- <div class="remember-wrapper">
-        <label class="remember-label">
-          <input type="checkbox" name="rememberMe" value="true">
+      <div class="remember-wrapper">
+        <label class="remember-label forgot-password">
+          <a href="/reset-password">Forgot Password?</a>
+        </label>
+        <!-- <label class="remember-label">
+          <input type="checkbox" name="rememberMe" value="true" />
           <span class="custom-checkbox"></span>
           Remember Me
-        </label>
-      </div> -->
+        </label> -->
+      </div>
       <% if (errors && errors.length > 0) { %>
-        <div class="error-message">
-          <ul>
-            <% errors.forEach((error) => { %>
-              <p class="flash-error"><%= error %></p>
-            <% }); %>
-          </ul>
-        </div>
-        <% } %>
+      <div class="error-message">
+        <ul>
+          <% errors.forEach((error) => { %>
+          <p class="flash-error"><%= error %></p>
+          <% }); %>
+        </ul>
+      </div>
+      <% } %>
       <button type="submit">Login</button>
     </form>
-
     <p class="auth-footer">
       Don't have an account?
       <a href="/register">Register</a>
     </p>
-
   </div>
 </div>
 
