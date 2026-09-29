@@ -1,30 +1,56 @@
 import mongoose from "mongoose";
 import { ShortLink } from "../models/ShortLink.js";
 
-let isConnected = false;
+// Fail after 8s instead of letting every query hang
+mongoose.set("bufferTimeoutMS", 8000);
 
-export const connectDB = async () => {
-  if (isConnected) {
-    return;
+let connectionPromise = null;
+let lastError = null;
+
+// Never expose credentials from a connection string in logs / health output
+const redact = (message = "") =>
+  message.replace(/mongodb(\+srv)?:\/\/[^\s"']+/gi, "mongodb://<redacted>");
+
+// Safe to call on every request: the connection is created once and reused.
+// If connecting fails, the next call tries again (important on Vercel, where
+// a warm instance would otherwise stay broken after one failed cold start).
+export const connectDB = () => {
+  if (mongoose.connection.readyState === 1) return Promise.resolve();
+  if (connectionPromise) return connectionPromise;
+
+  const uri = process.env.MONGO_URI || process.env.MONGODB_URI;
+  if (!uri) {
+    lastError = "MONGO_URI environment variable is not set";
+    console.error(`❌ DB Connection Error: ${lastError}`);
+    return Promise.resolve();
   }
 
-  try {
-    const conn = await mongoose.connect(
-      process.env.MONGO_URI || process.env.MONGODB_URI,
-    );
+  connectionPromise = mongoose
+    .connect(uri, { serverSelectionTimeoutMS: 8000 })
+    .then(async () => {
+      lastError = null;
+      console.log("✅ MongoDB Connected");
 
-    isConnected = conn.connections[0].readyState === 1;
+      // Replaces the old global unique index on shortCode with the
+      // per-user one ({ userId, shortCode }). No-op once in sync.
+      await ShortLink.syncIndexes();
+    })
+    .catch((error) => {
+      lastError = redact(`${error.name}: ${error.message}`);
+      console.error("❌ DB Connection Error:", lastError);
+      connectionPromise = null; // allow a retry on the next request
+    });
 
-    console.log("✅ MongoDB Connected");
-
-    // Replaces the old global unique index on shortCode with the
-    // per-user one ({ userId, shortCode }). No-op once in sync.
-    await ShortLink.syncIndexes();
-  } catch (error) {
-    console.error("❌ DB Connection Error:", error);
-    // ❌ DO NOT use process.exit()
-  }
+  return connectionPromise;
 };
+
+const STATES = ["disconnected", "connected", "connecting", "disconnecting"];
+
+export const getDBStatus = () => ({
+  state: STATES[mongoose.connection.readyState] || "unknown",
+  database: mongoose.connection.readyState === 1 ? mongoose.connection.name : null,
+  error: lastError,
+});
 
 // import mongoose from "mongoose";
 // import { env } from "./env.js";

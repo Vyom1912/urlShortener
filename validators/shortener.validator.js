@@ -17,6 +17,7 @@ export const RESERVED_CODES = [
   "style.css",
   "favicon.ico",
   "404",
+  "health",
   "api",
   "admin",
 ];

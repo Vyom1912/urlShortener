@@ -125,6 +125,7 @@ Open <http://localhost:3000>. To try the mobile layout, open DevTools and switch
 | GET    | `/verify-email-token`        | Verify via code or emailed link               |
 | GET/POST | `/reset-password`          | Request a password reset email                |
 | GET/POST | `/reset-password/:token`   | Set a new password                            |
+| GET    | `/health`                    | Deployment check: database status and which settings are set (yes/no only) |
 
 Usernames and short codes cannot use the app's own words (`login`, `profile`, `edit`, …) so they never clash with these routes.
 
@@ -177,7 +178,9 @@ public/style.css          All styles (mobile-first, dark mode)
 2. In **Project → Settings → Environment Variables**, add every variable from the table above.
    Set `FRONTEND_URL` to your Vercel URL (e.g. `https://your-app.vercel.app`) so email links point to the live site.
 3. In MongoDB Atlas → **Network Access**, allow connections from Vercel (e.g. `0.0.0.0/0`).
-4. Deploy.
+4. Deploy, then open `https://<your-app>.vercel.app/health`. It should show `"ok": true`.
+   If not, `database.error` explains why (for example a wrong password, or Atlas blocking Vercel's IP),
+   and `env` shows which settings are missing. After changing environment variables, **redeploy** so they take effect.
 
 > **Note:** flash messages use the default in-memory session store. On serverless hosting a message can occasionally be lost between requests.
 > For production, switch to a persistent store such as [`connect-mongo`](https://www.npmjs.com/package/connect-mongo).
