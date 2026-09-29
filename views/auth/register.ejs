@@ -1,49 +1,50 @@
-<%- include('../partials/header', { title: 'Register' }) %>
+<%- include('../partials/header', { narrow: true }) %>
 
-<div class="hero">
-  <div class="container auth-box">
-
-    <h1>Create Account</h1>
-
-    <form action="/register" method="POST" >
-
-      <div class="input-group">
-        <label><i class="fa-solid fa-user"></i></label>
-        <input type="text" name="name" required placeholder="Enter Full Name" />
-      </div>
-
-      <div class="input-group">
-        <label><i class="fa-solid fa-envelope"></i></label>
-        <input type="email" name="email" required placeholder="Enter Email" />
-      </div>
-
-      <div class="input-group">
-        <label><i class="fa-solid fa-lock"></i></label>
-        <input type="password" name="password" required placeholder="Enter Password" />
-      </div>
-
-      <!-- <div class="input-group">
-        <input type="password" name="confirmPassword" required placeholder=" " />
-        <label>Confirm Password</label>
-      </div> -->
-      <% if (errors && errors.length > 0) { %>
-        <div class="error-message">
-          <ul>
-            <% errors.forEach((error) => { %>
-              <p class="flash-error"><%= error %></p>
-            <% }); %>
-          </ul>
-        </div>
-      <% } %>
-      <button type="submit">Register</button>
-    </form>
-
-    <p class="auth-footer">
-      Already have an account?
-      <a href="/login">Login</a>
-    </p>
-
-  </div>
+<div class="auth-hero">
+  <div class="brand-mark"><i class="fa-solid fa-link"></i></div>
+  <h1>Create your account</h1>
+  <p>Start shortening and tracking links in seconds</p>
 </div>
+
+<%- include('../partials/flash') %>
+
+<section class="card">
+  <form class="form" action="/register" method="POST">
+    <div class="field">
+      <label class="field-label" for="name">Full name</label>
+      <div class="input-wrap">
+        <i class="fa-solid fa-user"></i>
+        <input class="input" type="text" name="name" id="name" required
+          minlength="3" maxlength="100" autocomplete="name"
+          placeholder="Jane Doe" value="<%= old.name || '' %>" />
+      </div>
+    </div>
+
+    <div class="field">
+      <label class="field-label" for="email">Email</label>
+      <div class="input-wrap">
+        <i class="fa-solid fa-envelope"></i>
+        <input class="input" type="email" name="email" id="email" required
+          autocomplete="email" inputmode="email" autocapitalize="off"
+          placeholder="you@example.com" value="<%= old.email || '' %>" />
+      </div>
+    </div>
+
+    <%- include('../partials/password-field', {
+      id: 'password',
+      name: 'password',
+      label: 'Password',
+      autocomplete: 'new-password',
+      minlength: 6,
+      hint: 'At least 6 characters',
+    }) %>
+
+    <button type="submit" class="btn btn-primary btn-block">Create account</button>
+  </form>
+</section>
+
+<p class="auth-switch">
+  Already have an account? <a href="/login">Log in</a>
+</p>
 
 <%- include('../partials/footer') %>

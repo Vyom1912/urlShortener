@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { ShortLink } from "../models/ShortLink.js";
 
 let isConnected = false;
 
@@ -8,11 +9,17 @@ export const connectDB = async () => {
   }
 
   try {
-    const conn = await mongoose.connect(process.env.MONGO_URI);
+    const conn = await mongoose.connect(
+      process.env.MONGO_URI || process.env.MONGODB_URI,
+    );
 
     isConnected = conn.connections[0].readyState === 1;
 
     console.log("✅ MongoDB Connected");
+
+    // Replaces the old global unique index on shortCode with the
+    // per-user one ({ userId, shortCode }). No-op once in sync.
+    await ShortLink.syncIndexes();
   } catch (error) {
     console.error("❌ DB Connection Error:", error);
     // ❌ DO NOT use process.exit()

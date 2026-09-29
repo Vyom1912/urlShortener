@@ -1,63 +1,65 @@
-<%- include('../partials/header', { title: 'edit-profile' }) %>
+<%- include('../partials/header', { narrow: true }) %>
+<% const displayHost = host.replace(/^https?:\/\//, ""); %>
 
-<div class="main">
-  <section class="edit-profile-box">
-    <div class="container">
-      <div class="shortener-content">
-        <div class="alert-container">
-          <% if(user) { %>
-          <div class="alert alert-success">
-            <i class="fa-solid fa-circle-check"></i>
-            <span>You are logged in</span>
-          </div>
-          <% } else { %>
-          <div class="alert alert-warning">
-            <i class="fa-solid fa-circle-exclamation"></i>
-            <span>You are not logged in</span>
-          </div>
-          <% } %>
-        </div>
+<header class="page-header">
+  <a href="/profile" class="muted"><i class="fa-solid fa-arrow-left"></i> Profile</a>
+  <h1 style="margin-top: 10px">Edit profile</h1>
+</header>
 
-        <div class="shortener-form">
-          <h2 class="form-title">Edit Your Profile</h2>
-          <form
-            action="/edit-profile"
-            method="post"
-            class="url-form"
-            id="url-form"
-          >
-            <div class="input-group">
-              <label for="name"> <i class="fa-solid fa-user"></i> </label>
-              <input
-                type="text"
-                name="name"
-                id="name"
-                value="<%= name || '' %>"
-                required
-              />
-            </div>
+<%- include('../partials/flash') %>
 
-            <% if (errors && errors.length > 0) { %>
-            <% errors.forEach(function(error) { %>
-            <p class="flash-error"><%= error %></p>
-            <% }); %>
-            <% } %>
-            <div class="form-group button">
-              <button
-                type="submit"
-                name="shorten"
-                id="shorten"
-                class="form-submit"
-                value="Save Changes"
-              >
-                Save Changes
-              </button>
-            </div>
-          </form>
-        </div>
+<section class="card">
+  <form class="form" action="/edit-profile" method="post">
+    <div class="field">
+      <label class="field-label" for="name">Full name</label>
+      <div class="input-wrap">
+        <i class="fa-solid fa-user"></i>
+        <input class="input" type="text" name="name" id="name" required
+          minlength="3" maxlength="100" autocomplete="name" value="<%= name || '' %>" />
       </div>
     </div>
-  </section>
-</div>
+
+    <div class="field">
+      <label class="field-label" for="handle">Username</label>
+      <div class="input-wrap">
+        <i class="fa-solid fa-at"></i>
+        <input class="input" type="text" name="handle" id="handle" required
+          minlength="3" maxlength="30" pattern="[A-Za-z0-9][A-Za-z0-9_\-]*"
+          autocomplete="username" autocapitalize="off" spellcheck="false"
+          value="<%= handle || '' %>" data-current="<%= currentHandle %>" />
+      </div>
+      <span class="field-hint">
+        Your links will look like
+        <strong><%= displayHost %>/<span id="handle-preview"><%= handle %></span>/your-code</strong>
+      </span>
+      <div class="alert alert-warning" id="handle-warning" hidden>
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        <span>
+          Changing your username changes all your short links.
+          Links you already shared with
+          <strong>/<%= currentHandle %>/</strong> will stop working.
+        </span>
+      </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary btn-block">Save changes</button>
+    <a href="/profile" class="btn btn-ghost btn-block">Cancel</a>
+  </form>
+</section>
+
+<script>
+  (function () {
+    const input = document.getElementById("handle");
+    const preview = document.getElementById("handle-preview");
+    const warning = document.getElementById("handle-warning");
+    const update = () => {
+      const value = input.value.trim().toLowerCase();
+      preview.textContent = value || "…";
+      warning.hidden = value === input.dataset.current;
+    };
+    input.addEventListener("input", update);
+    update();
+  })();
+</script>
 
 <%- include('../partials/footer') %>

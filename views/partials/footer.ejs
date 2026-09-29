@@ -1,39 +1,110 @@
-<footer class="footer">
-  <p>© <%= new Date().getFullYear() %> MyWebsite. All rights reserved.</p>
-</footer>
+    </main>
 
-<script>
-document.addEventListener("DOMContentLoaded", function () {
+    <footer class="footer">
+      © <%= new Date().getFullYear() %> URL Shortener
+    </footer>
 
-  const copyButtons = document.querySelectorAll(".copyBtn");
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-  copyButtons.forEach(button => {
-    button.addEventListener("click", async function () {
+    <script>
+      (function () {
+        const toastEl = document.getElementById("toast");
+        let toastTimer;
+        function toast(message) {
+          toastEl.textContent = message;
+          toastEl.classList.add("show");
+          clearTimeout(toastTimer);
+          toastTimer = setTimeout(() => toastEl.classList.remove("show"), 1800);
+        }
 
-      const url = this.getAttribute("data-url");
-      if (!url) {
-        alert("No URL found!");
-        return;
-      }
+        async function copyText(text) {
+          if (navigator.clipboard && window.isSecureContext) {
+            return navigator.clipboard.writeText(text);
+          }
+          // Fallback for plain http (the clipboard API needs https)
+          const ta = document.createElement("textarea");
+          ta.value = text;
+          ta.setAttribute("readonly", "");
+          ta.style.position = "fixed";
+          ta.style.opacity = "0";
+          document.body.appendChild(ta);
+          ta.select();
+          const ok = document.execCommand("copy");
+          ta.remove();
+          if (!ok) throw new Error("copy failed");
+        }
 
-      try {
-        await navigator.clipboard.writeText(url);
+        // Copy buttons
+        document.querySelectorAll("[data-copy]").forEach((btn) => {
+          btn.addEventListener("click", async () => {
+            try {
+              await copyText(btn.dataset.copy);
+              const label = btn.querySelector("span");
+              const icon = btn.querySelector("i");
+              btn.classList.add("copied");
+              if (icon) icon.className = "fa-solid fa-check";
+              if (label) label.textContent = "Copied";
+              toast("Link copied to clipboard");
+              setTimeout(() => {
+                btn.classList.remove("copied");
+                if (icon) icon.className = "fa-regular fa-copy";
+                if (label) label.textContent = "Copy";
+              }, 1600);
+            } catch {
+              toast("Could not copy. Long-press the link instead.");
+            }
+          });
+        });
 
-        this.innerHTML = '<i class="fa-solid fa-check" style="color:green;"></i>';
+        // Native share sheet (mostly phones)
+        document.querySelectorAll("[data-share]").forEach((btn) => {
+          if (!navigator.share) return btn.remove();
+          btn.hidden = false;
+          btn.addEventListener("click", () => {
+            navigator.share({ url: btn.dataset.share }).catch(() => {});
+          });
+        });
 
-        setTimeout(() => {
-          this.innerHTML = '<i class="fa-regular fa-copy"></i>';
-        }, 1500);
+        // Show / hide password
+        document.querySelectorAll("[data-toggle-password]").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            const input = document.getElementById(btn.dataset.togglePassword);
+            const show = input.type === "password";
+            input.type = show ? "text" : "password";
+            btn.querySelector("i").className = show
+              ? "fa-regular fa-eye-slash"
+              : "fa-regular fa-eye";
+            btn.setAttribute("aria-label", show ? "Hide password" : "Show password");
+          });
+        });
 
-      } catch (err) {
-        alert("Failed to copy!");
-      }
+        // Confirm before destructive actions
+        document.querySelectorAll("form[data-confirm]").forEach((form) => {
+          form.addEventListener("submit", (e) => {
+            if (!confirm(form.dataset.confirm)) e.preventDefault();
+          });
+        });
 
-    });
-  });
+        // Prevent double submits
+        document.querySelectorAll("form").forEach((form) => {
+          form.addEventListener("submit", (e) => {
+            if (e.defaultPrevented) return;
+            const btn = form.querySelector("button[type=submit]");
+            if (btn) setTimeout(() => (btn.disabled = true), 0);
+          });
+        });
 
-});
-</script>
-
-</body>
+        // Filter links
+        const search = document.getElementById("link-search");
+        if (search) {
+          search.addEventListener("input", () => {
+            const q = search.value.trim().toLowerCase();
+            document.querySelectorAll("[data-search]").forEach((item) => {
+              item.hidden = !!q && !item.dataset.search.includes(q);
+            });
+          });
+        }
+      })();
+    </script>
+  </body>
 </html>

@@ -1,87 +1,134 @@
-<%- include('partials/header', { title: 'Home' }) %>
+<%- include('partials/header') %>
+<%
+  // Every short link lives under this user's handle: host/<handle>/<code>
+  const displayHost = (host + "/" + handle).replace(/^https?:\/\//, "");
+  const oldCode = old.shortCode || "";
+%>
 
-<div class="hero">
-  <div class="container ">
-    <h1>URL Shortener</h1>
+<header class="page-header">
+  <h1>Shorten a link</h1>
+  <p>Paste a long URL and get a short one you can share anywhere.</p>
+</header>
 
-    <form action="<%= editLink ? '/edit/' + editLink.id : '/' %>" method="post">
-      <div class="input-group">
-        <label><i class="fa-solid fa-link"></i></label>
-        <input type="url" name="url" required placeholder="Enter URL to shorten" value="<%= editLink ? editLink.url : '' %>" />
+<%- include('partials/flash') %>
+
+<section class="card">
+  <form class="form" action="/" method="post">
+    <div class="field">
+      <label class="field-label" for="url">Long URL</label>
+      <div class="input-wrap">
+        <i class="fa-solid fa-link"></i>
+        <input
+          class="input"
+          type="url"
+          name="url"
+          id="url"
+          inputmode="url"
+          autocomplete="off"
+          autocapitalize="off"
+          spellcheck="false"
+          required
+          placeholder="https://example.com/very/long/link"
+          value="<%= old.url || '' %>" />
       </div>
+    </div>
 
-      <div class="input-group">
-        <label><i class="fa-solid fa-code"></i></label>
-        <input type="text" name="shortCode" required placeholder="Enter custom short code " value="<%= editLink ? editLink.shortCode : '' %>" />
-      </div>
-
-      <% if (errors && errors.length > 0) { %>
-         <div class="error-message">
-          <ul>
-        <% errors.forEach(e => { %>
-          <p class="flash-error"><%= e %></p>
-        <% }) %>
-        </ul>
+    <details class="optional" <%= oldCode ? 'open' : '' %>>
+      <summary><i class="fa-solid fa-chevron-right"></i> Customize short code (optional)</summary>
+      <div class="field">
+        <label class="sr-only" for="shortCode">Short code</label>
+        <div class="input-wrap">
+          <span class="input-prefix" title="<%= displayHost %>/">/<%= handle %>/</span>
+          <input
+            class="input"
+            type="text"
+            name="shortCode"
+            id="shortCode"
+            autocomplete="off"
+            autocapitalize="off"
+            spellcheck="false"
+            maxlength="50"
+            pattern="[A-Za-z0-9_\-]{2,50}"
+            placeholder="my-link"
+            value="<%= oldCode %>" />
         </div>
-      <% } %>
+        <span class="field-hint">
+          Your link will be <strong><%= displayHost %>/your-code</strong>.
+          Letters, numbers, - and _. Leave empty for a random code.
+        </span>
+      </div>
+    </details>
 
-      <button type="submit"><%= editLink ? 'Update' : 'Shorten' %></button>
-    </form>
-    
-    <div class="shortenedUrlsBox">
-      <h2>Shortened URLs</h2>
-      <ul class="shortenedLinks">
+    <button type="submit" class="btn btn-primary btn-block">
+      <i class="fa-solid fa-wand-magic-sparkles"></i> Shorten URL
+    </button>
+  </form>
+</section>
 
-      <% if (links && links.length > 0) { %>
+<section class="section">
+  <div class="section-title">
+    <h2>Your links</h2>
+    <% if (links.length) { %><span class="count-pill"><%= links.length %></span><% } %>
+  </div>
 
-    <% links.forEach(link => { %>
+  <% if (links.length > 3) { %>
+    <div class="input-wrap search">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <label class="sr-only" for="link-search">Search links</label>
+      <input class="input" type="search" id="link-search" placeholder="Search your links" autocomplete="off" />
+    </div>
+  <% } %>
 
-      <% if (!editLink || link.id !== editLink.id) { %>
-
-        <% const truncatedUrl = link.url.length > 60 
-            ? link.url.substring(0, 60) + "..." 
-            : link.url %>
-
-        <li class="shortenedLinkItem">
-          <div class="linkInfo"> 
-            <a class="shortLink" href="/<%= link.shortCode %>" target="_blank">
-              <%= host %> / <%= link.shortCode %>
-            </a>
-            <p class="unShortLink">
-              <%= truncatedUrl %>
-            </p>
+  <% if (links.length) { %>
+    <ul class="links">
+      <% links.forEach((link) => {
+           const shortUrl = host + "/" + handle + "/" + link.shortCode;
+      %>
+        <li class="link-card" data-search="<%= (link.shortCode + ' ' + link.url).toLowerCase() %>">
+          <div class="link-top">
+            <span class="link-favicon" aria-hidden="true"><i class="fa-solid fa-globe"></i></span>
+            <div class="link-body">
+              <a class="short-link" href="<%= shortUrl %>" target="_blank" rel="noopener" title="<%= shortUrl %>">
+                <span class="short-host"><%= host.replace(/^https?:\/\//, "") %></span><span class="short-path">/<%= handle %>/<%= link.shortCode %></span>
+              </a>
+              <a class="long-link" href="<%= link.url %>" target="_blank" rel="noopener noreferrer" title="<%= link.url %>">
+                <%= link.url %>
+              </a>
+              <div class="link-meta">
+                <span><i class="fa-solid fa-chart-simple"></i><%= link.clicks || 0 %> click<%= link.clicks === 1 ? '' : 's' %></span>
+                <% if (link.createdAt) { %>
+                  <span><i class="fa-regular fa-calendar"></i><%= new Date(link.createdAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) %></span>
+                <% } %>
+              </div>
+            </div>
           </div>
-          <div class="icon">
 
-            <button type="button" class="icon-btn copyBtn" 
-                    data-url="<%= host %>/<%= link.shortCode %>">
-              <i class="fa-regular fa-copy"></i>
+          <div class="link-actions">
+            <button type="button" class="btn btn-sm btn-ghost btn-copy" data-copy="<%= shortUrl %>">
+              <i class="fa-regular fa-copy"></i><span>Copy</span>
             </button>
-
-            <a href="/?edit=<%= link.id %>" class="icon-btn">
-              <i class="fa-regular fa-pen-to-square c-green"></i>
+            <button type="button" class="icon-btn" data-share="<%= shortUrl %>" aria-label="Share" hidden>
+              <i class="fa-solid fa-share-nodes"></i>
+            </button>
+            <a class="icon-btn" href="/edit/<%= link.id %>" aria-label="Edit link">
+              <i class="fa-regular fa-pen-to-square"></i>
             </a>
-
-            <form action="/delete/<%= link.id %>" method="post">
-              <button type="submit" class="icon-btn">
-                <i class="fa-regular fa-trash-can c-red"></i>
+            <form action="/delete/<%= link.id %>" method="post" data-confirm="Delete <%= displayHost %>/<%= link.shortCode %>? This cannot be undone.">
+              <button type="submit" class="icon-btn danger" aria-label="Delete link">
+                <i class="fa-regular fa-trash-can"></i>
               </button>
             </form>
-
           </div>
         </li>
-
-        <% } %>
-
       <% }) %>
-
-    <% } else { %>
-
-    <p class="shortenedLinkItem">No short links available</p>
-
-    <% } %>
     </ul>
-  </div>
-</div>
+  <% } else { %>
+    <div class="empty">
+      <i class="fa-solid fa-link-slash"></i>
+      <h3>No links yet</h3>
+      <p>Your shortened links will show up here.</p>
+    </div>
+  <% } %>
+</section>
 
 <%- include('partials/footer') %>

@@ -44,8 +44,12 @@ export const createAccessToken = (payload) =>
     expiresIn: ACCESS_TOKEN_EXPIRY / MILLISECONDS_PER_SECOND,
   });
 
+// Refresh tokens must be signed and verified with the same secret
+const getRefreshSecret = () =>
+  process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET;
+
 export const createRefreshToken = (id) =>
-  jwt.sign({ sessionId: id }, process.env.JWT_SECRET, {
+  jwt.sign({ sessionId: id }, getRefreshSecret(), {
     expiresIn: REFRESH_TOKEN_EXPIRY / MILLISECONDS_PER_SECOND,
   });
 
@@ -53,8 +57,19 @@ export const verifyJWTToken = (token) => {
   return jwt.verify(token, process.env.JWT_SECRET);
 };
 export const verifyRefreshToken = (token) => {
-  return jwt.verify(token, process.env.JWT_REFRESH_SECRET);
+  return jwt.verify(token, getRefreshSecret());
 };
+
+export const getCookieConfig = () => ({
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production" || !!process.env.VERCEL,
+  sameSite: "lax",
+});
+
+// Base URL used for links inside emails
+export const getBaseUrl = () =>
+  (process.env.FRONTEND_URL || `http://localhost:${process.env.PORT || 3000}`)
+    .replace(/\/+$/, "");
 // AUTH
 export const authenticateUser = async ({ req, res, user }) => {
   const session = await createSession(user._id, {
@@ -73,7 +88,7 @@ export const authenticateUser = async ({ req, res, user }) => {
   const accessToken = createAccessToken(payload);
   const refreshToken = createRefreshToken(session._id);
 
-  const config = { httpOnly: true, secure: true };
+  const config = getCookieConfig();
 
   res.cookie("access_token", accessToken, {
     ...config,
@@ -89,10 +104,10 @@ export const authenticateUser = async ({ req, res, user }) => {
 // REFRESH
 export const refreshTokens = async (refreshToken) => {
   try {
-    const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+    const decoded = verifyRefreshToken(refreshToken);
 
     const session = await Session.findById(decoded.sessionId);
-    if (!session) return null;
+    if (!session || !session.valid) return null;
 
     const user = await User.findById(session.userId);
     if (!user) return null;
@@ -104,18 +119,8 @@ export const refreshTokens = async (refreshToken) => {
       isEmailValid: user.isEmailValid,
       sessionId: session._id,
     };
-    const newAccessToken = jwt.sign(payload, process.env.JWT_SECRET, {
-      expiresIn: "15m",
-    });
-
-    // const newRefreshToken = jwt.sign(payload, process.env.JWT_REFRESH_SECRET, {
-    //   expiresIn: "7d",
-    // });
-    const newRefreshToken = jwt.sign(
-      { sessionId: session._id },
-      process.env.JWT_REFRESH_SECRET,
-      { expiresIn: "7d" },
-    );
+    const newAccessToken = createAccessToken(payload);
+    const newRefreshToken = createRefreshToken(session._id);
 
     // return { accessToken: newAccessToken, refreshToken: newRefreshToken };
     return {
@@ -138,6 +143,7 @@ export const insertVerifyEmailToken = ({ userId, token }) =>
 
 export const findVerificationEmailToken = async ({ token, email }) => {
   const user = await User.findOne({ email });
+  if (!user) return null;
   return VerifyEmailToken.findOne({
     userId: user._id,
     token,
@@ -150,14 +156,21 @@ export const verifyUserEmailAndUpdate = (email) =>
 
 export const clearVerifyEmailToken = async (email) => {
   const user = await User.findOne({ email });
+  if (!user) return null;
   return VerifyEmailToken.deleteMany({ userId: user._id });
 };
 
-export const updateUserByName = ({ userId, name }) =>
-  User.findByIdAndUpdate(userId, { name });
+export const updateUserProfile = ({ userId, name, handle }) =>
+  User.findByIdAndUpdate(userId, { name, handle });
+
+export const isHandleTaken = (handle, exceptUserId) =>
+  User.exists({ handle, _id: { $ne: exceptUserId } });
 
 const createVerifyEmailLink = (email, token) => {
-  return `http://localhost:3001/verify-email-token?token=${token}&email=${email}`;
+  const url = new URL("/verify-email-token", getBaseUrl());
+  url.searchParams.set("token", token);
+  url.searchParams.set("email", email);
+  return url.toString();
 };
 export const sendNewVerifyEmailLink = async ({ userId, email }) => {
   const randomToken = await generateRandomToken();
@@ -223,7 +236,7 @@ export const createResetPasswordLink = async ({ userId, email }) => {
     tokenHash,
   });
 
-  return `${process.env.FRONTEND_URL}/reset-password/${randomToken}`;
+  return `${getBaseUrl()}/reset-password/${randomToken}`;
 };
 
 // getResetPasswordToken

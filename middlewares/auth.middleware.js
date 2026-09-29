@@ -1,4 +1,8 @@
-import { verifyJWTToken, refreshTokens } from "../services/auth.services.js";
+import {
+  verifyJWTToken,
+  refreshTokens,
+  getCookieConfig,
+} from "../services/auth.services.js";
 import {
   ACCESS_TOKEN_EXPIRY,
   REFRESH_TOKEN_EXPIRY,
@@ -17,39 +21,35 @@ export const verifyAuthentication = async (req, res, next) => {
       const decoded = verifyJWTToken(accessToken);
       req.user = decoded;
       return next();
-    } catch (err) {}
+    } catch {
+      // expired / invalid access token → try the refresh token below
+    }
   }
 
   if (refreshToken) {
-    try {
-      // const { newAccessToken, newRefreshToken, user } =
-      //   await refreshTokens(refreshToken);
-      const tokens = await refreshTokens(refreshToken);
+    const tokens = await refreshTokens(refreshToken);
 
-      if (!tokens) return next();
-
-      const { newAccessToken, newRefreshToken, user } = tokens;
-      req.user = user;
-
-      const baseConfig = {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-      };
-
-      res.cookie("access_token", newAccessToken, {
-        ...baseConfig,
-        maxAge: ACCESS_TOKEN_EXPIRY,
-      });
-
-      res.cookie("refresh_token", newRefreshToken, {
-        ...baseConfig,
-        maxAge: REFRESH_TOKEN_EXPIRY,
-      });
-
+    if (!tokens) {
+      // Stale refresh token: drop it so we don't retry on every request
+      res.clearCookie("access_token");
+      res.clearCookie("refresh_token");
       return next();
-    } catch (error) {
-      console.log(error);
     }
+
+    const { newAccessToken, newRefreshToken, user } = tokens;
+    req.user = user;
+
+    const baseConfig = getCookieConfig();
+
+    res.cookie("access_token", newAccessToken, {
+      ...baseConfig,
+      maxAge: ACCESS_TOKEN_EXPIRY,
+    });
+
+    res.cookie("refresh_token", newRefreshToken, {
+      ...baseConfig,
+      maxAge: REFRESH_TOKEN_EXPIRY,
+    });
   }
 
   return next();

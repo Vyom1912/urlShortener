@@ -1,20 +1,40 @@
-<%- include('partials/header', { title: 'Edit' }) %>
+<%- include('partials/header', { narrow: true }) %>
+<% const displayHost = (host + "/" + handle).replace(/^https?:\/\//, ""); %>
 
-<div class="container">
-  <h1>Edit Link</h1>
+<header class="page-header">
+  <a href="/" class="muted"><i class="fa-solid fa-arrow-left"></i> Back to links</a>
+  <h1 style="margin-top: 10px">Edit link</h1>
+</header>
 
-  <form action="/edit/<%= id %>" method="post">
-    <input type="url" name="url" value="<%= url %>" required />
-    <input type="text" name="shortCode" value="<%= shortCode %>" required />
+<%- include('partials/flash') %>
 
-    <% if (errors && errors.length > 0) { %>
-      <% errors.forEach(e => { %>
-        <p><%= e %></p>
-      <% }) %>
-    <% } %>
+<section class="card">
+  <form class="form" action="/edit/<%= id %>" method="post">
+    <div class="field">
+      <label class="field-label" for="url">Destination URL</label>
+      <div class="input-wrap">
+        <i class="fa-solid fa-link"></i>
+        <input class="input" type="url" name="url" id="url" inputmode="url"
+          autocapitalize="off" spellcheck="false" required value="<%= url %>" />
+      </div>
+    </div>
 
-    <button>Update</button>
+    <div class="field">
+      <label class="field-label" for="shortCode">Short code</label>
+      <div class="input-wrap">
+        <span class="input-prefix" title="<%= displayHost %>/">/<%= handle %>/</span>
+        <input class="input" type="text" name="shortCode" id="shortCode"
+          autocapitalize="off" spellcheck="false" maxlength="50"
+          pattern="[A-Za-z0-9_\-]{2,50}" required value="<%= shortCode %>" />
+      </div>
+      <span class="field-hint">Changing it will break the old short link.</span>
+    </div>
+
+    <button type="submit" class="btn btn-primary btn-block">
+      <i class="fa-solid fa-check"></i> Save changes
+    </button>
+    <a href="/" class="btn btn-ghost btn-block">Cancel</a>
   </form>
-</div>
+</section>
 
 <%- include('partials/footer') %>

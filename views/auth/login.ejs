@@ -1,48 +1,39 @@
-<%- include('../partials/header', { title: 'Login' }) %>
+<%- include('../partials/header', { narrow: true }) %>
 
-<div class="hero">
-  <div class="container auth-box">
-    <h1>Login</h1>
-    <form action="/login" method="POST">
-      <div class="input-group">
-        <label><i class="fa-solid fa-envelope"></i></label>
-        <input type="email" name="email" required placeholder="Enter Email" />
-      </div>
-      <div class="input-group">
-        <label><i class="fa-solid fa-lock"></i></label>
-        <input
-          type="password"
-          name="password"
-          required
-          placeholder="Enter Password"
-        />
-      </div>
-      <div class="remember-wrapper">
-        <label class="remember-label forgot-password">
-          <a href="/reset-password">Forgot Password?</a>
-        </label>
-        <!-- <label class="remember-label">
-          <input type="checkbox" name="rememberMe" value="true" />
-          <span class="custom-checkbox"></span>
-          Remember Me
-        </label> -->
-      </div>
-      <% if (errors && errors.length > 0) { %>
-      <div class="error-message">
-        <ul>
-          <% errors.forEach((error) => { %>
-          <p class="flash-error"><%= error %></p>
-          <% }); %>
-        </ul>
-      </div>
-      <% } %>
-      <button type="submit">Login</button>
-    </form>
-    <p class="auth-footer">
-      Don't have an account?
-      <a href="/register">Register</a>
-    </p>
-  </div>
+<div class="auth-hero">
+  <div class="brand-mark"><i class="fa-solid fa-link"></i></div>
+  <h1>Welcome back</h1>
+  <p>Log in to manage your short links</p>
 </div>
+
+<%- include('../partials/flash') %>
+
+<section class="card">
+  <form class="form" action="/login" method="POST">
+    <div class="field">
+      <label class="field-label" for="email">Email</label>
+      <div class="input-wrap">
+        <i class="fa-solid fa-envelope"></i>
+        <input class="input" type="email" name="email" id="email" required
+          autocomplete="email" inputmode="email" autocapitalize="off"
+          placeholder="you@example.com" value="<%= old.email || '' %>" />
+      </div>
+    </div>
+
+    <%- include('../partials/password-field', {
+      id: 'password',
+      name: 'password',
+      label: 'Password',
+      autocomplete: 'current-password',
+      aside: '<a href="/reset-password">Forgot password?</a>',
+    }) %>
+
+    <button type="submit" class="btn btn-primary btn-block">Log in</button>
+  </form>
+</section>
+
+<p class="auth-switch">
+  Don't have an account? <a href="/register">Create one</a>
+</p>
 
 <%- include('../partials/footer') %>

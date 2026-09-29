@@ -2,36 +2,66 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title><%= title %></title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#3b4fd8" />
+    <meta name="description" content="Shorten, share and track your links." />
+    <title><%= locals.title ? title + " · URL Shortener" : "URL Shortener" %></title>
 
-    <link rel="stylesheet" href="/style.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap"
       rel="stylesheet" />
-<link
-  rel="stylesheet"
-  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
-/>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link rel="stylesheet" href="/style.css" />
   </head>
-  <body>
+  <% const currentPath = locals.currentPath || ""; %>
+  <body class="<%= locals.user ? 'has-tabbar' : '' %>">
     <nav class="navbar">
       <div class="nav-wrapper">
-          <% if (user) { %>
-            <li class="nav-link username"><%= user.name %> 👋</li>
-          <% } else { %>
-             <li class="nav-link username"></li>
-           <% } %>
+        <a class="brand" href="/">
+          <span class="brand-mark"><i class="fa-solid fa-link"></i></span>
+          <span>URL Shortener</span>
+        </a>
 
-        <ul class="navbar-nav"> 
-           <% if (user) { %>
-            <li><a class="nav-link" href="/">Home</a></li>
-            <li><a class="nav-link" href="/profile">Profile</a></li>
-            <li><a class="nav-link" href="/logout">Logout</a></li>
-          <% } else { %>
-            <li><a class="nav-link" href="/login">Login</a></li>
-            <li><a class="nav-link" href="/register">Register</a></li>   
-           <% } %>
-        </ul>
+        <% if (locals.user) { %>
+          <div class="nav-links">
+            <a class="nav-link <%= currentPath === '/' ? 'active' : '' %>" href="/">
+              <i class="fa-solid fa-house"></i> Home
+            </a>
+            <a class="nav-link <%= currentPath === '/profile' ? 'active' : '' %>" href="/profile">
+              <i class="fa-solid fa-user"></i> <%= user.name %>
+            </a>
+            <a class="nav-link" href="/logout">
+              <i class="fa-solid fa-arrow-right-from-bracket"></i> Log out
+            </a>
+          </div>
+          <a class="nav-avatar" href="/profile" aria-label="Your profile">
+            <%= (user.name || "?").charAt(0).toUpperCase() %>
+          </a>
+        <% } else { %>
+          <div class="nav-guest">
+            <a class="btn btn-sm btn-ghost" href="/login">Log in</a>
+            <a class="btn btn-sm btn-primary" href="/register">Sign up</a>
+          </div>
+        <% } %>
       </div>
     </nav>
+
+    <% if (locals.user) { %>
+      <nav class="tabbar" aria-label="Main">
+        <a class="tab <%= currentPath === '/' ? 'active' : '' %>" href="/">
+          <i class="fa-solid fa-house"></i><span>Home</span>
+        </a>
+        <a class="tab <%= currentPath === '/profile' ? 'active' : '' %>" href="/profile">
+          <i class="fa-solid fa-user"></i><span>Profile</span>
+        </a>
+        <a class="tab" href="/logout">
+          <i class="fa-solid fa-arrow-right-from-bracket"></i><span>Log out</span>
+        </a>
+      </nav>
+    <% } %>
+
+    <main class="page <%= locals.narrow ? 'page-narrow' : '' %>">

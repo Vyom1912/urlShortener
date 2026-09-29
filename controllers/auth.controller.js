@@ -9,7 +9,8 @@ import {
   verifyUserEmailAndUpdate,
   clearVerifyEmailToken,
   sendNewVerifyEmailLink,
-  updateUserByName,
+  updateUserProfile,
+  isHandleTaken,
   updateUserPassword,
   findUserByEmail,
   createResetPasswordLink,
@@ -17,7 +18,10 @@ import {
   clearResetPasswordToken,
 } from "../services/auth.services.js";
 
-import { getAllShortLinks } from "../services/shortener.services.js";
+import {
+  getAllShortLinks,
+  ensureUserHandle,
+} from "../services/shortener.services.js";
 
 import {
   loginUserSchema,
@@ -30,13 +34,24 @@ import {
 } from "../validators/auth.validator.js";
 import { getHtmlFromMjmlTemplate } from "../lib/get-html-from-template.js";
 import { sendEmail } from "../lib/send-email.js";
-// ---------------- REGISTER ----------------
 
+const issuesToMessages = (error) => error.issues.map((issue) => issue.message);
+
+// The access token caches name / isEmailValid. Dropping it forces the
+// middleware to mint a fresh one (from the refresh token) on the next request.
+const refreshUserToken = (res) => res.clearCookie("access_token");
+
+// ---------------- REGISTER ----------------
+// getRegisterPage
 export const getRegisterPage = (req, res) => {
   if (req.user) return res.redirect("/");
-  return res.render("auth/register", { errors: req.flash("error") });
+  return res.render("auth/register", {
+    title: "Create account",
+    errors: req.flash("error"),
+    old: req.flash("old")[0] || {},
+  });
 };
-
+// postRegister
 export const postRegister = async (req, res) => {
   if (req.user) return res.redirect("/");
 
@@ -44,6 +59,7 @@ export const postRegister = async (req, res) => {
 
   if (!result.success) {
     req.flash("error", result.error.issues[0].message);
+    req.flash("old", { name: req.body?.name, email: req.body?.email });
     return res.redirect("/register");
   }
 
@@ -51,7 +67,8 @@ export const postRegister = async (req, res) => {
 
   const userExist = await findUserByEmail(email);
   if (userExist) {
-    req.flash("error", "User already exists");
+    req.flash("error", "An account with this email already exists");
+    req.flash("old", { name, email });
     return res.redirect("/register");
   }
 
@@ -70,16 +87,25 @@ export const postRegister = async (req, res) => {
     email,
   });
 
+  req.flash(
+    "success",
+    `Welcome, ${name}! Check your inbox to verify your email.`,
+  );
   return res.redirect("/");
 };
 
 // ---------------- LOGIN ----------------
-
+// getLoginPage
 export const getLoginPage = (req, res) => {
   if (req.user) return res.redirect("/");
-  return res.render("auth/login", { errors: req.flash("error") });
+  return res.render("auth/login", {
+    title: "Log in",
+    errors: req.flash("error"),
+    success: req.flash("success"),
+    old: req.flash("old")[0] || {},
+  });
 };
-
+// postLogin
 export const postLogin = async (req, res) => {
   if (req.user) return res.redirect("/");
 
@@ -87,24 +113,20 @@ export const postLogin = async (req, res) => {
 
   if (!result.success) {
     req.flash("error", result.error.issues[0].message);
+    req.flash("old", { email: req.body?.email });
     return res.redirect("/login");
   }
 
   const { email, password } = result.data;
 
   const user = await findUserByEmail(email);
-  if (!user) {
-    req.flash("error", "Invalid email or password");
-    return res.redirect("/login");
-  }
+  const valid = user && (await comparePassword(user.password, password));
 
-  const valid = await comparePassword(user.password, password);
   if (!valid) {
     req.flash("error", "Invalid email or password");
+    req.flash("old", { email });
     return res.redirect("/login");
   }
-
-  res.cookie("user", user.name);
 
   await authenticateUser({ req, res, user });
 
@@ -114,22 +136,29 @@ export const postLogin = async (req, res) => {
 // ---------------- PROFILE ----------------
 
 export const getProfilePage = async (req, res) => {
-  console.log("USER:", req.user);
   if (!req.user) return res.redirect("/login");
 
   const user = await findUserById(req.user.id);
   if (!user) return res.redirect("/login");
 
-  const links = await getAllShortLinks(user._id);
-  console.log("REQ.USER:", req.user);
+  const [links, handle] = await Promise.all([
+    getAllShortLinks(user._id),
+    ensureUserHandle(user._id),
+  ]);
+  const totalClicks = links.reduce((sum, link) => sum + (link.clicks || 0), 0);
+
   return res.render("auth/profile", {
-    user: {
+    title: "Profile",
+    success: req.flash("success"),
+    profile: {
       id: user._id,
       name: user.name,
       email: user.email,
+      handle,
       isEmailValid: user.isEmailValid,
       createdAt: user.createdAt,
-      links,
+      linksCount: links.length,
+      totalClicks,
     },
   });
 };
@@ -137,7 +166,7 @@ export const getProfilePage = async (req, res) => {
 // ---------------- LOGOUT ----------------
 
 export const logoutUser = async (req, res) => {
-  await clearUserSession(req.user.sessionId);
+  if (req.user?.sessionId) await clearUserSession(req.user.sessionId);
 
   res.clearCookie("access_token");
   res.clearCookie("refresh_token");
@@ -149,114 +178,141 @@ export const logoutUser = async (req, res) => {
 // ---------------- VERIFY EMAIL ----------------
 
 export const getVerifyEmailPage = async (req, res) => {
-  if (!req.user) return res.redirect("/");
+  if (!req.user) return res.redirect("/login");
 
   const user = await findUserById(req.user.id);
-  if (!user || user.isEmailValid) return res.redirect("/");
+  if (!user || user.isEmailValid) return res.redirect("/profile");
 
   return res.render("auth/verify-email", {
+    title: "Verify email",
     email: user.email,
-    user,
-    previewUrl: null,
+    errors: req.flash("errors"),
+    success: req.flash("success"),
   });
 };
 
 export const resendVerificationLink = async (req, res) => {
-  if (!req.user) return res.redirect("/");
+  if (!req.user) return res.redirect("/login");
 
   const user = await findUserById(req.user.id);
-  if (!user || user.isEmailValid) return res.redirect("/");
+  if (!user || user.isEmailValid) return res.redirect("/profile");
 
   await sendNewVerifyEmailLink({
     userId: user._id,
     email: user.email,
   });
 
+  req.flash("success", "A new verification email is on its way.");
   res.redirect("/verify-email");
 };
 
 export const verifyEmailToken = async (req, res) => {
   const { data, error } = verifyEmailSchema.safeParse(req.query);
 
-  if (error) {
-    return res.send("Verification link invalid or expired");
-  }
-
-  const token = await findVerificationEmailToken(data);
+  const token = error ? null : await findVerificationEmailToken(data);
 
   if (!token) {
-    return res.send("Verification link invalid or expired");
+    if (req.user) {
+      req.flash("errors", "That code is invalid or has expired");
+      return res.redirect("/verify-email");
+    }
+    return res.status(400).render("404", {
+      title: "Link expired",
+      status: 400,
+      message: "This verification link is invalid or has expired.",
+    });
   }
 
   await verifyUserEmailAndUpdate(data.email);
   await clearVerifyEmailToken(data.email);
 
-  return res.redirect("/profile");
+  refreshUserToken(res);
+  req.flash("success", "Your email is verified 🎉");
+  return res.redirect(req.user ? "/profile" : "/login");
 };
 
 // ---------------- EDIT PROFILE ----------------
 
 export const getEditProfilePage = async (req, res) => {
-  if (!req.user) return res.redirect("/");
+  if (!req.user) return res.redirect("/login");
 
   const user = await findUserById(req.user.id);
-  if (!user) return res.status(404).send("User not found");
+  if (!user) return res.redirect("/login");
+
+  const old = req.flash("old")[0];
+  const currentHandle = await ensureUserHandle(user._id);
 
   return res.render("auth/edit-profile", {
-    name: user.name,
-    user,
+    title: "Edit profile",
+    name: old?.name ?? user.name,
+    handle: old?.handle ?? currentHandle,
+    currentHandle,
+    host: `${req.protocol}://${req.get("host")}`,
     errors: req.flash("errors"),
   });
 };
 
 export const postEditProfile = async (req, res) => {
-  if (!req.user) return res.redirect("/");
+  if (!req.user) return res.redirect("/login");
 
   const { data, error } = verifyUserSchema.safeParse(req.body);
 
-  if (error) {
-    req.flash(
-      "errors",
-      error.errors.map((e) => e.message),
-    );
+  const fail = (messages) => {
+    req.flash("errors", messages);
+    req.flash("old", { name: req.body?.name, handle: req.body?.handle });
     return res.redirect("/edit-profile");
+  };
+
+  if (error) return fail(issuesToMessages(error));
+
+  if (await isHandleTaken(data.handle, req.user.id)) {
+    return fail("That username is already taken");
   }
 
-  await updateUserByName({
-    userId: req.user.id,
-    name: data.name,
-  });
+  try {
+    await updateUserProfile({
+      userId: req.user.id,
+      name: data.name,
+      handle: data.handle,
+    });
+  } catch (err) {
+    // Someone grabbed the same username at the same moment
+    if (err.code === 11000) return fail("That username is already taken");
+    throw err;
+  }
 
+  refreshUserToken(res);
+  req.flash("success", "Profile updated");
   res.redirect("/profile");
 };
 
-// ---------------- CHANGE PASSWORD (UI ONLY) ----------------
+// ---------------- CHANGE PASSWORD ----------------
 
 export const getChangePasswordPage = (req, res) => {
-  if (!req.user) return res.redirect("/");
+  if (!req.user) return res.redirect("/login");
 
   return res.render("auth/change-password", {
-    user: req.user,
+    title: "Change password",
     errors: req.flash("errors"),
   });
 };
 export const postChangePassword = async (req, res) => {
-  if (!req.user) return res.redirect("/");
+  if (!req.user) return res.redirect("/login");
 
   const result = verifyPasswordSchema.safeParse(req.body);
   if (!result.success) {
-    const errorMessage = result.error.issues.map((err) => err.message);
-    req.flash("errors", errorMessage);
+    req.flash("errors", issuesToMessages(result.error));
     return res.redirect("/change-password");
   }
 
   const { currentPassword, newPassword } = result.data;
 
   const user = await findUserById(req.user.id);
+  if (!user) return res.redirect("/login");
 
   const isPasswordValid = await comparePassword(user.password, currentPassword);
   if (!isPasswordValid) {
-    req.flash("error", "Invalid current password");
+    req.flash("errors", "Your current password is incorrect");
     return res.redirect("/change-password");
   }
 
@@ -265,11 +321,15 @@ export const postChangePassword = async (req, res) => {
     newPassword,
   });
 
+  req.flash("success", "Password changed successfully");
   return res.redirect("/profile");
 };
-// getResetPasswordPage
+
+// ---------------- FORGOT / RESET PASSWORD ----------------
+// getForgotPasswordPage
 export const getForgotPasswordPage = async (req, res) => {
   return res.render("auth/forgot-password", {
+    title: "Forgot password",
     formSubmitted: req.flash("formSubmitted")[0],
     errors: req.flash("errors"),
   });
@@ -278,12 +338,9 @@ export const getForgotPasswordPage = async (req, res) => {
 export const postForgotPassword = async (req, res) => {
   const result = forgotPasswordSchema.safeParse(req.body);
   if (!result.success) {
-    const errorMessages = result.error.issues.map((err) => err.message);
-    // req.flash('errors', errorMessages[0]);
-    errorMessages.forEach((msg) => req.flash("errors", msg));
+    req.flash("errors", issuesToMessages(result.error));
     return res.redirect("/reset-password");
   }
-  // success case
 
   const user = await findUserByEmail(result.data.email);
 
@@ -297,15 +354,16 @@ export const postForgotPassword = async (req, res) => {
       name: user.name,
       link: resetPasswordLink,
     });
-    // console.log('html: ', html);
 
     await sendEmail({
       to: user.email,
       subject: "Reset Your Password",
       html,
     });
-    req.flash("formSubmitted", true);
   }
+
+  // Always show the same message so emails can't be enumerated
+  req.flash("formSubmitted", true);
   return res.redirect("/reset-password");
 };
 // getResetPasswordTokenPage
@@ -314,14 +372,15 @@ export const getResetPasswordTokenPage = async (req, res) => {
   const passwordResetToken = await getResetPasswordToken(token);
 
   if (!passwordResetToken) {
-    req.flash("errors", "Invalid or expired reset password token");
-    return res.render("auth/wrong-reset-password-token");
+    return res.render("auth/wrong-reset-password-token", {
+      title: "Invalid link",
+    });
   }
 
   return res.render("auth/reset-password", {
+    title: "Reset password",
     token,
     errors: req.flash("errors"),
-    formSubmitted: req.flash("formSubmitted")[0],
   });
 };
 // postResetPasswordToken
@@ -330,33 +389,34 @@ export const postResetPasswordToken = async (req, res) => {
   const passwordResetData = await getResetPasswordToken(token);
 
   if (!passwordResetData) {
-    req.flash("errors", "Invalid or expired reset password token");
-    return res.render("auth/wrong-reset-password-token");
+    return res.render("auth/wrong-reset-password-token", {
+      title: "Invalid link",
+    });
   }
 
-  // const { data, error } = verifyResetPasswordSchema.safeParse({
-  //   newPassword: req.body.newPassword,
-  //   confirmPassword: req.body.confirmNewPassword,
-  // });
   const { data, error } = verifyResetPasswordSchema.safeParse(req.body);
   if (error) {
-    const errorMessage = error.errors.map((err) => err.message);
-    req.flash("errors", errorMessage);
+    req.flash("errors", issuesToMessages(error));
     return res.redirect(`/reset-password/${token}`);
   }
 
-  const { newPassword } = data;
-
   const user = await findUserById(passwordResetData.userId);
-  // if (!user) {
-  //   req.flash('errors', 'User not found');
-  //   return res.redirect(`/reset-password/${token}`);
-  // }
-
   await clearResetPasswordToken(passwordResetData.userId);
+
+  if (!user) {
+    return res.render("auth/wrong-reset-password-token", {
+      title: "Invalid link",
+    });
+  }
+
   await updateUserPassword({
     userId: user._id,
-    newPassword,
+    newPassword: data.newPassword,
   });
+
+  req.flash(
+    "success",
+    "Password reset! You can log in with your new password.",
+  );
   return res.redirect("/login");
 };

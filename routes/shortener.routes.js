@@ -3,6 +3,7 @@ import {
   postURLShortner,
   getURLShortner,
   redirectToShortCode,
+  redirectToUserShortCode,
   getShortenerEditPage,
   updateShortLinkHandler,
   deleteShortLink,
@@ -20,10 +21,7 @@ router
 
 router.route("/delete/:id").post(deleteShortLink);
 
+router.get("/:handle/:shortCode", redirectToUserShortCode);
 router.get("/:shortCode", redirectToShortCode);
-
-router.get("/404", (req, res) => {
-  res.status(404).send("Page Not Found");
-});
 
 export const shortenerRoutes = router;

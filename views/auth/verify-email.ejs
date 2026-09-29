@@ -1,74 +1,33 @@
-<%- include('../partials/header', { title: 'Email Varification' }) %>
+<%- include('../partials/header', { narrow: true }) %>
 
-<main class="container">
-  <h1>Verify Your Email</h1>
+<div class="auth-hero">
+  <div class="brand-mark"><i class="fa-solid fa-envelope-open-text"></i></div>
+  <h1>Verify your email</h1>
+  <p>We sent an 8-digit code to <strong><%= email %></strong></p>
+</div>
 
-  <div class="alert-container">
-    <% if(user) { %>
-    <div class="alert alert-success">
-      <i class="fa-solid fa-circle-check"></i>
-      <span>You are logged in</span>
+<%- include('../partials/flash') %>
+
+<section class="card">
+  <form class="form" action="/verify-email-token" method="get">
+    <div class="field">
+      <label class="field-label" for="token">Verification code</label>
+      <div class="input-wrap">
+        <input class="input code-input" type="text" name="token" id="token"
+          inputmode="numeric" autocomplete="one-time-code" maxlength="8"
+          pattern="[0-9]{8}" title="Enter the 8-digit code" required placeholder="00000000" />
+      </div>
     </div>
-    <% } else { %>
-    <div class="alert alert-warning">
-      <i class="fa-solid fa-circle-exclamation"></i>
-      <span>You are not logged in</span>
-    </div>
-    <% } %>
-  </div>
+    <input type="hidden" name="email" value="<%= email %>" />
+    <button type="submit" class="btn btn-primary btn-block">Verify</button>
+  </form>
+</section>
 
-  <div class="verify-card">
-    <div class="verify-card-body">
-      <p>
-        <strong>Email:</strong>
-        <%= email %>
-      </p>
-      <p>
-        Your email has not been verified yet. Please verify your email by
-        entering the 8-digit code or request a new verification link.
-      </p>
+<form action="/resend-verification-link" method="post" class="auth-switch">
+  Didn't get it?
+  <button type="submit" class="btn btn-sm btn-ghost" style="margin-left: 6px">
+    <i class="fa-solid fa-rotate-right"></i> Resend email
+  </button>
+</form>
 
-      <form
-        action="/resend-verification-link"
-        method="post"
-        class="form-inline"
-      >
-        <button type="submit" class="btn-verify">
-          Resend Verification Link
-        </button>
-      </form>
-    </div>
-  </div>
-
-  <div class="verify-card mt-20">
-    <div class="verify-card-body">
-      <form action="/verify-email-token" method="get" class="form">
-        <div class="verify-form-group">
-          <label for="token" class="control-label"
-            >Enter 8-Digit Verification Code:</label
-          >
-          <input
-            type="text"
-            name="token"
-            id="token"
-            class="form-control"
-            maxlength="8"
-            required
-            pattern="\d{8}"
-            title="Please enter an 8-digit number"
-          />
-        </div>
-
-        <input type="hidden" value="<%= email %>" name="email" />
-
-        <button type="submit">Verify Code</button>
-      </form>
-    </div>
-  </div>
-</main>
-<% if (typeof previewUrl !== "undefined" && previewUrl) { %>
-<script>
-  window.open('<%= previewUrl %>', '__parent');
-</script>
-<% } %>
 <%- include('../partials/footer') %>

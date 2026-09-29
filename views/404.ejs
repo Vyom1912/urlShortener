@@ -1,32 +1,15 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
-    <style>
-      .flex {
-        width: 95vw;
-        height: 95vh;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-      }
-      h1,
-      a {
-        color: rgb(255, 255, 255) !important;
-      }
-    </style>
-  </head>
-  <body>
-    <%- include('partials/header', { title: '404' }) %>
+<%- include('partials/header', { narrow: true }) %>
+<% const code = locals.status || 404; %>
 
-<div style="text-align:center">
-  <h1>404 - Not Found</h1>
-  <a href="/">Go Home</a>
-</div>
+<section class="status-page">
+  <div class="status-code"><%= code %></div>
+  <h1><%= locals.title || "Page not found" %></h1>
+  <p>
+    <%= locals.message || (code === 404
+      ? "This link doesn't exist or may have been removed."
+      : "Something went wrong on our side. Please try again.") %>
+  </p>
+  <a href="/" class="btn btn-primary"><i class="fa-solid fa-house"></i> Go home</a>
+</section>
 
 <%- include('partials/footer') %>
-  </body>
-</html>

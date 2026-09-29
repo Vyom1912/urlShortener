@@ -1,0 +1,22 @@
+<%
+  const toList = (v) => (Array.isArray(v) ? v : v ? [v] : []).flat().filter(Boolean);
+  const errorList = toList(locals.errors);
+  const successList = toList(locals.success);
+%>
+<% if (errorList.length || successList.length) { %>
+  <div class="flash-stack">
+    <% successList.forEach((msg) => { %>
+      <div class="alert alert-success" role="status">
+        <i class="fa-solid fa-circle-check"></i><span><%= msg %></span>
+      </div>
+    <% }) %>
+    <% if (errorList.length) { %>
+      <div class="alert alert-error" role="alert">
+        <i class="fa-solid fa-circle-exclamation"></i>
+        <ul>
+          <% errorList.forEach((msg) => { %><li><%= msg %></li><% }) %>
+        </ul>
+      </div>
+    <% } %>
+  </div>
+<% } %>

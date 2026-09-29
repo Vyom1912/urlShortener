@@ -1,3 +1,8 @@
 {
+  "functions": {
+    "api/index.js": {
+      "includeFiles": "{views,public,emails}/**"
+    }
+  },
   "routes": [{ "src": "/(.*)", "dest": "/api/index.js" }]
 }
